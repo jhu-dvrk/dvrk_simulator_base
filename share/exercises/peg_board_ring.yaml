@@ -1,0 +1,24 @@
+scene:
+  name: peg_board_ring
+  objects:
+  - name: table
+    asset: package://dvrk_simulator_base/share/assets/table/table.urdf
+    fixed: true
+    position:
+    - 0.0
+    - 0.0
+    - 0.03
+  - name: peg_board
+    asset: package://dvrk_simulator_base/share/assets/peg_board/peg_board.urdf
+    fixed: true
+    position:
+    - 0.0
+    - 0.0
+    - 0.035
+  - name: ring
+    asset: package://dvrk_simulator_base/share/assets/ring/ring.urdf
+    fixed: false
+    position:
+    - -0.030
+    - -0.010
+    - 0.040

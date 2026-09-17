@@ -39,6 +39,7 @@ setup(
         "console_scripts": [
             "generate_cart_frames = dvrk_simulator_base.cart_frames:main",
             "cart_frame_editor = dvrk_simulator_base.cart_frame_editor:main",
+            "start_dvrk_system = dvrk_simulator_base.start_dvrk_system:main",
         ],
     },
     zip_safe=True,

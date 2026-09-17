@@ -1,0 +1,34 @@
+scene:
+  name: peg_board_CUHK
+  objects:
+  - name: table
+    asset: package://dvrk_simulator_base/share/assets/table/table.urdf
+    fixed: true
+    position:
+    - 0.0
+    - 0.0
+    - 0.03
+  - name: peg_board
+    asset: package://dvrk_simulator_base/share/assets/peg_board_CUHK/peg_board_CUHK.urdf
+    fixed: true
+    position:
+    - 0.0
+    - 0.0
+    - 0.041
+    orientation_xyzw:
+    - 0.0
+    - 0.0
+    - 0.7071067811865476
+    - 0.7071067811865476
+  - name: triangular_block
+    asset: package://dvrk_simulator_base/share/assets/triangular_block/triangular_block.urdf
+    fixed: false
+    position:
+    - -0.013
+    - -0.03
+    - 0.065
+    orientation_xyzw:
+    - 0.0
+    - 0.0
+    - 0.7071067811865476
+    - 0.7071067811865476

@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<robot name="triangular_block">
+  <material name="blue">
+    <color rgba="0.078431 0.494117 0.984313 1"/>
+  </material>
+
+  <link name="triangular_block">
+    <contact>
+      <lateral_friction value="1.0"/>
+      <rolling_friction value="0.0"/>
+      <contact_cfm value="0.0"/>
+      <contact_erp value="1.0"/>
+    </contact>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.01"/>
+      <inertia ixx="4.0e-7" ixy="0" ixz="0"
+               iyy="4.0e-7" iyz="0" izz="3.0e-7"/>
+    </inertial>
+    <visual>
+      <geometry><mesh filename="meshes/triangular_block.obj"/></geometry>
+      <material name="blue"/>
+    </visual>
+    <collision>
+      <geometry><mesh filename="meshes/triangular_block_vhacd.obj"/></geometry>
+    </collision>
+  </link>
+</robot>
