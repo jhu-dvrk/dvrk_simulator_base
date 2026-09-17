@@ -2,7 +2,30 @@ from pathlib import Path
 
 import numpy as np
 
-from dvrk_simulator_base.scene import load_scene_config
+from dvrk_simulator_base.scene import SceneResolver, load_scene_config
+
+
+def test_scene_resolver_lists_available_scenes_and_search_paths(tmp_path):
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    first.mkdir()
+    second.mkdir()
+    (second / "available.yaml").touch()
+    resolver = SceneResolver((first, second), relative_root=tmp_path)
+
+    assert resolver.resolve("available") == second / "available.yaml"
+    assert resolver.available() == (second / "available.yaml",)
+
+    try:
+        resolver.resolve("missing")
+    except FileNotFoundError as error:
+        message = str(error)
+    else:
+        raise AssertionError("missing scene was unexpectedly resolved")
+    assert "Searched scene paths:" in message
+    assert str(first) in message
+    assert str(second) in message
+    assert "available.yaml" in message
 
 
 def test_scene_loads_robots_assets_and_frame_overrides(tmp_path):

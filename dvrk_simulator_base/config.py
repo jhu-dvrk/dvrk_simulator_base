@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -70,6 +70,40 @@ class RobotConfig:
     joints: tuple[JointConfig, ...]
     home_position: np.ndarray
     raw: dict[str, Any]
+
+
+def with_base_pose(
+    config: RobotConfig,
+    *,
+    position: Any | None = None,
+    orientation_xyzw: Any | None = None,
+) -> RobotConfig:
+    """Return a robot configuration with a validated base-pose override."""
+    base_position = config.base_position
+    base_orientation = config.base_orientation_xyzw
+    if position is not None:
+        base_position = np.asarray(position, dtype=float)
+        if base_position.shape != (3,) or not np.all(np.isfinite(base_position)):
+            raise ValueError("overridden base position must have three finite values")
+    if orientation_xyzw is not None:
+        base_orientation = np.asarray(orientation_xyzw, dtype=float)
+        if (
+            base_orientation.shape != (4,)
+            or not np.all(np.isfinite(base_orientation))
+            or np.linalg.norm(base_orientation) == 0.0
+        ):
+            raise ValueError("overridden base orientation must be a non-zero quaternion")
+    base_position = np.array(base_position, dtype=float, copy=True)
+    base_orientation = np.array(
+        base_orientation / np.linalg.norm(base_orientation), dtype=float, copy=True
+    )
+    base_position.setflags(write=False)
+    base_orientation.setflags(write=False)
+    return replace(
+        config,
+        base_position=base_position,
+        base_orientation_xyzw=base_orientation,
+    )
 
 
 def load_robot_config(path: str | Path, base_position: Any | None = None,

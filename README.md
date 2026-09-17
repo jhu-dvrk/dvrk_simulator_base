@@ -19,3 +19,28 @@ Run the simulator-free tests with:
 ```shell
 python3 -m pytest -q
 ```
+
+## Patient-cart RCM frames
+
+The base package owns the backend-neutral spherical RCM layout generator.
+Print the default `frames:` YAML snippet with:
+
+```shell
+ros2 run dvrk_simulator_base generate_cart_frames
+```
+
+To update the `scene.frames` mapping of an existing scene in place:
+
+```shell
+ros2 run dvrk_simulator_base generate_cart_frames -s scene.yaml
+```
+
+For an interactive PyQt6 editor with top and side layout previews, adjustable
+azimuth/polar coordinates for all RCMs, and a copyable YAML result:
+
+```shell
+ros2 run dvrk_simulator_base cart_frame_editor
+```
+
+PyQt6 is intentionally optional: it is required only for the editor, not for
+using simulator backends or generating YAML from the command line.

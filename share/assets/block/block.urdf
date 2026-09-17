@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<robot name="dvrk_pybullet_grasp_block">
+  <link name="block">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.010"/>
+      <inertia ixx="0.00000035" ixy="0" ixz="0" iyy="0.00000056" iyz="0" izz="0.00000069"/>
+    </inertial>
+    <visual>
+      <geometry><box size="0.024 0.016 0.010"/></geometry>
+      <material name="block_orange"><color rgba="0.95 0.34 0.08 1"/></material>
+    </visual>
+    <collision><geometry><box size="0.024 0.016 0.010"/></geometry></collision>
+    <contact><lateral_friction value="1.0"/></contact>
+  </link>
+</robot>

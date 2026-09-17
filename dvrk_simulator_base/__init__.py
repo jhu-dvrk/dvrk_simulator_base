@@ -2,6 +2,7 @@
 
 from .config import JointConfig, RobotConfig, load_robot_config, load_robot_document
 from .operating_state import CRTKOperatingState
+from .scene import SceneResolver
 from .snapshots import ArmSnapshot, OperatingStateSnapshot
 from .types import IKResult, JointState, Pose, Twist
 
@@ -14,6 +15,7 @@ __all__ = [
     "OperatingStateSnapshot",
     "Pose",
     "RobotConfig",
+    "SceneResolver",
     "Twist",
     "load_robot_config",
     "load_robot_document",
