@@ -48,3 +48,108 @@ def test_scene_loads_robots_assets_and_frame_overrides(tmp_path):
     np.testing.assert_allclose(result.robots[0].base_position, [0.1, 0.2, 0.3])
     assert result.robots[0].instrument == "420006"
     assert result.robots[1].endoscope == "Si_straight"
+
+
+def test_scene_resolver_resolve_all(tmp_path):
+    first = tmp_path / "scenes"
+    first.mkdir()
+    (first / "scene_a.yaml").touch()
+    (first / "scene_b.yaml").touch()
+    resolver = SceneResolver((first,))
+
+    resolved = resolver.resolve_all(["scene_a", "scene_b"])
+    assert resolved == (first / "scene_a.yaml", first / "scene_b.yaml")
+
+
+def test_scene_loads_multiple_scene_files(tmp_path):
+    arm_root = Path(__file__).parents[1] / "share" / "arms"
+    scene_robots = tmp_path / "robots.yaml"
+    scene_robots.write_text(
+        """scene:
+  name: cart
+  robots:
+    - {config: PSM1.yaml, instrument: '420006'}
+""",
+        encoding="utf-8",
+    )
+    scene_exercise = tmp_path / "exercise.yaml"
+    scene_exercise.write_text(
+        """scene:
+  name: task
+  objects:
+    - name: table
+      asset: package://dvrk_simulator_base/share/assets/table/table.urdf
+      fixed: true
+      position: [0.0, 0.0, 0.0]
+      orientation_xyzw: [0.0, 0.0, 0.0, 1.0]
+""",
+        encoding="utf-8",
+    )
+
+    result = load_scene_config([scene_robots, scene_exercise], robot_config_root=arm_root)
+    assert result.name == "cart+task"
+    assert [robot.name for robot in result.robots] == ["PSM1"]
+    assert len(result.objects) == 1
+    assert result.objects[0].name == "table"
+
+
+def test_scene_loads_included_scene_files(tmp_path):
+    arm_root = Path(__file__).parents[1] / "share" / "arms"
+    exercise = tmp_path / "exercise.yaml"
+    exercise.write_text(
+        """scene:
+  name: exercise
+  objects:
+    - name: table
+      asset: package://dvrk_simulator_base/share/assets/table/table.urdf
+      fixed: true
+      position: [0.0, 0.0, 0.0]
+      orientation_xyzw: [0.0, 0.0, 0.0, 1.0]
+""",
+        encoding="utf-8",
+    )
+    main_scene = tmp_path / "main.yaml"
+    main_scene.write_text(
+        """scene:
+  name: main_scene
+  include:
+    - exercise.yaml
+  robots:
+    - {config: PSM1.yaml, instrument: '420006'}
+""",
+        encoding="utf-8",
+    )
+
+    result = load_scene_config(main_scene, robot_config_root=arm_root)
+    assert "main_scene" in result.name
+    assert [robot.name for robot in result.robots] == ["PSM1"]
+    assert len(result.objects) == 1
+    assert result.objects[0].name == "table"
+
+
+def test_scene_detects_circular_includes(tmp_path):
+    scene_a = tmp_path / "a.yaml"
+    scene_b = tmp_path / "b.yaml"
+    scene_a.write_text(
+        """scene:
+  name: a
+  include: [b.yaml]
+  robots: [{config: PSM1.yaml}]
+""",
+        encoding="utf-8",
+    )
+    scene_b.write_text(
+        """scene:
+  name: b
+  include: [a.yaml]
+""",
+        encoding="utf-8",
+    )
+
+    try:
+        load_scene_config(scene_a)
+    except ValueError as error:
+        assert "Circular scene include detected" in str(error)
+    else:
+        raise AssertionError("expected circular include error was not raised")
+

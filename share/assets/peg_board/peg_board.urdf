@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<robot name="dvrk_peg_board">
+  <material name="plate_gray"><color rgba="0.82 0.84 0.88 1.0"/></material>
+  <material name="peg_blue"><color rgba="0.22 0.42 0.72 1.0"/></material>
+  <link name="peg_board">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.002"/>
+    </inertial>
+    <!-- Base plate (15cm x 11cm x 0.5cm) -->
+    <visual>
+      <origin xyz="0 0 -0.0025" rpy="0 0 0"/>
+      <geometry><box size="0.150 0.110 0.005"/></geometry>
+      <material name="plate_gray"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.0025" rpy="0 0 0"/>
+      <geometry><box size="0.150 0.110 0.005"/></geometry>
+    </collision>
+    <!-- 48 vertical pegs (2cm height, 4mm diameter) on 2x2cm grid with 0.5cm margin -->
+    <visual><origin xyz="-0.070 -0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.070 -0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.070 -0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.070 -0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.070 -0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.070 -0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.070 0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.070 0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.070 0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.070 0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.070 0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.070 0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.050 -0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.050 -0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.050 -0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.050 -0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.050 -0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.050 -0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.050 0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.050 0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.050 0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.050 0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.050 0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.050 0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.030 -0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.030 -0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.030 -0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.030 -0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.030 -0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.030 -0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.030 0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.030 0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.030 0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.030 0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.030 0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.030 0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.010 -0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.010 -0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.010 -0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.010 -0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.010 -0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.010 -0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.010 0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.010 0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.010 0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.010 0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="-0.010 0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="-0.010 0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.010 -0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.010 -0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.010 -0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.010 -0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.010 -0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.010 -0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.010 0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.010 0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.010 0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.010 0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.010 0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.010 0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.030 -0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.030 -0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.030 -0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.030 -0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.030 -0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.030 -0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.030 0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.030 0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.030 0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.030 0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.030 0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.030 0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.050 -0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.050 -0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.050 -0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.050 -0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.050 -0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.050 -0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.050 0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.050 0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.050 0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.050 0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.050 0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.050 0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.070 -0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.070 -0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.070 -0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.070 -0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.070 -0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.070 -0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.070 0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.070 0.010 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.070 0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.070 0.030 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <visual><origin xyz="0.070 0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry><material name="peg_blue"/></visual>
+    <collision><origin xyz="0.070 0.050 0.010"/><geometry><cylinder radius="0.002" length="0.020"/></geometry></collision>
+    <contact><lateral_friction value="1.0"/></contact>
+  </link>
+</robot>
