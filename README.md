@@ -9,6 +9,9 @@ frame utilities, command-message validation, operating state, and the runtime
 kinematics protocol. Code is copied from `dvrk_isaac_sim` while the Isaac
 package remains unchanged.
 
+The shared [CRTK ROS contract](docs/ros_crtk_contract.md) defines the common
+topic graph, QoS, command queueing, and Cartesian-frame behavior for backends.
+
 URDF parsing and simulator model import are deliberately backend-owned. The
 base package describes semantic joint and frame names in configuration and
 requires name-based mappings through its backend contracts, but does not build
