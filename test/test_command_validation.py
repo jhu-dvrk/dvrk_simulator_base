@@ -62,8 +62,8 @@ def test_pose_message_is_validated_and_converted():
     message.pose.orientation.w = 2.0
 
     pose = pose_from_message(message)
-    np.testing.assert_allclose(pose.position, [0.1, 0.2, 0.3])
-    np.testing.assert_allclose(pose.orientation, np.eye(3))
+    np.testing.assert_allclose([pose.p[0], pose.p[1], pose.p[2]], [0.1, 0.2, 0.3])
+    np.testing.assert_allclose([[pose.M[r, c] for c in range(3)] for r in range(3)], np.eye(3))
 
     message.pose.orientation.w = 0.0
     with pytest.raises(ValueError, match="cannot be zero"):

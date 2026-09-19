@@ -5,15 +5,37 @@ from __future__ import annotations
 from collections import deque
 import threading
 
-from .cartesian_frames import compose_pose, relative_pose, relative_twist, view_pose_from_optical
+import PyKDL
+
 from .command_mailbox import CommandMailboxes
 from .command_validation import jaw_position_from_message, joint_positions_from_message, pose_from_message
-from crtk.config import RobotConfig
+from dvrk.config import RobotConfig
 from .ros_messages import joint_state_message, operating_state_message, pose_stamped_message, string_stamped_message, twist_stamped_message
 from .ros_qos import transient_local_event_qos, transient_local_latched_qos
-from crtk.rotations import quaternion_matrix_xyzw
-from crtk.snapshots import ArmSnapshot, OperatingStateSnapshot
-from crtk.types import JointState, Pose
+from dvrk.snapshots import ArmSnapshot, OperatingStateSnapshot
+from dvrk.types import JointState
+
+# The dVRK optical convention is +X forward, +Y left, +Z up. Teleoperation
+# view coordinates use X left, Y up, Z away from the operator. This maps view
+# coordinates into the ECM optical frame and is independent of a simulator.
+_VIEW_TO_OPTICAL_FRAME = PyKDL.Frame(
+    PyKDL.Rotation(
+        0.0, 0.0, 1.0,
+        1.0, 0.0, 0.0,
+        0.0, 1.0, 0.0,
+    )
+)
+
+
+def _relative_twist(pose: PyKDL.Frame, twist: PyKDL.Twist, reference: PyKDL.Frame,
+                    reference_twist: PyKDL.Twist) -> PyKDL.Twist:
+    """Express a world twist in a moving reference frame."""
+    delta = pose.p - reference.p
+    linear = twist.vel - reference_twist.vel - (reference_twist.rot * delta)
+    angular = twist.rot - reference_twist.rot
+    rotation_inv = reference.M.Inverse()
+    return PyKDL.Twist(rotation_inv * linear, rotation_inv * angular)
+
 
 
 class LatestSnapshot:
@@ -63,7 +85,10 @@ class ArmRosInterface:
         self.commands = CommandMailboxes(command_queue_capacity)
         self.snapshots = LatestSnapshot()
         self._last_event_stamp_ns = -1
-        self.base_pose = Pose(config.base_position, quaternion_matrix_xyzw(config.base_orientation_xyzw))
+        self.base_pose = PyKDL.Frame(
+            PyKDL.Rotation.Quaternion(*config.base_orientation_xyzw),
+            PyKDL.Vector(*config.base_position),
+        )
         self.frame_id = "ECM_view" if config.type == "PSM" and ecm_interface is not None else config.parent_frame
         prefix = f"/{config.name}"
         event_qos = transient_local_event_qos()
@@ -132,23 +157,23 @@ class ArmRosInterface:
     def _jaw_move_jp_callback(self, message) -> None:
         self._submit(message, "jaw/move_jp", jaw_position_from_message)
 
-    def _world_view_pose(self) -> Pose | None:
+    def _world_view_pose(self) -> PyKDL.Frame | None:
         snapshot = None if self.ecm_interface is None else self.ecm_interface.snapshots.peek()
-        return None if snapshot is None else view_pose_from_optical(snapshot.measured_cp_world)
+        return None if snapshot is None else snapshot.measured_cp_world * _VIEW_TO_OPTICAL_FRAME
 
     def _cartesian_command(self, message, channel: str) -> None:
         try:
             target = pose_from_message(message)
             frame_id = message.header.frame_id
             if frame_id == self.config.base_frame:
-                target = compose_pose(self.base_pose, target)
+                target = self.base_pose * target
             elif self.ecm_interface is not None and frame_id != self.config.parent_frame:
                 if frame_id and frame_id != "ECM_view":
                     raise ValueError(f"unsupported frame {frame_id!r}")
                 world_view = self._world_view_pose()
                 if world_view is None:
                     raise ValueError("ECM state is unavailable")
-                target = compose_pose(world_view, target)
+                target = world_view * target
             elif frame_id and frame_id != self.config.parent_frame:
                 raise ValueError(f"unsupported frame {frame_id!r}")
         except (TypeError, ValueError, AttributeError) as error:
@@ -176,13 +201,19 @@ class ArmRosInterface:
         stamp = self.node.get_clock().now().to_msg(); measured_pose = snapshot.measured_cp_world; setpoint_pose = snapshot.setpoint_cp_world; measured_twist = snapshot.measured_cv_world
         world_view = self._world_view_pose()
         if world_view is not None and self.ecm_interface is not None:
-            ecm_snapshot = self.ecm_interface.snapshots.peek(); measured_pose = relative_pose(measured_pose, world_view); setpoint_pose = relative_pose(setpoint_pose, world_view)
-            if ecm_snapshot is not None: measured_twist = relative_twist(snapshot.measured_cp_world, snapshot.measured_cv_world, world_view, ecm_snapshot.measured_cv_world)
+            ecm_snapshot = self.ecm_interface.snapshots.peek()
+            world_view_inv = world_view.Inverse()
+            measured_pose = world_view_inv * measured_pose
+            setpoint_pose = world_view_inv * setpoint_pose
+            if ecm_snapshot is not None:
+                measured_twist = _relative_twist(snapshot.measured_cp_world, snapshot.measured_cv_world, world_view, ecm_snapshot.measured_cv_world)
         self.measured_js.publish(joint_state_message(snapshot.measured_js, stamp, self.frame_id)); self.setpoint_js.publish(joint_state_message(snapshot.setpoint_js, stamp, self.frame_id)); self.measured_cp.publish(pose_stamped_message(measured_pose, stamp, self.frame_id)); self.setpoint_cp.publish(pose_stamped_message(setpoint_pose, stamp, self.frame_id)); self.measured_cv.publish(twist_stamped_message(measured_twist, stamp, self.frame_id))
         for state in events:
             event_stamp = self._event_stamp(); self.operating_state.publish(operating_state_message(state, event_stamp, self.frame_id)); self.state.publish(string_stamped_message(state.state, event_stamp, self.frame_id))
         if self.config.type == "PSM":
-            self.local_measured_cp.publish(pose_stamped_message(relative_pose(snapshot.measured_cp_world, self.base_pose), stamp, self.config.base_frame)); self.local_setpoint_cp.publish(pose_stamped_message(relative_pose(snapshot.setpoint_cp_world, self.base_pose), stamp, self.config.base_frame))
+            base_inv = self.base_pose.Inverse()
+            self.local_measured_cp.publish(pose_stamped_message(base_inv * snapshot.measured_cp_world, stamp, self.config.base_frame))
+            self.local_setpoint_cp.publish(pose_stamped_message(base_inv * snapshot.setpoint_cp_world, stamp, self.config.base_frame))
         if snapshot.jaw_measured is not None and self.jaw_measured_js is not None:
             measured = JointState(("jaw",), [snapshot.jaw_measured], [0.0]); value = snapshot.jaw_measured if snapshot.jaw_setpoint is None else snapshot.jaw_setpoint
             self.jaw_measured_js.publish(joint_state_message(measured, stamp, self.frame_id)); self.jaw_setpoint_js.publish(joint_state_message(JointState(("jaw",), [value], [0.0]), stamp, self.frame_id))

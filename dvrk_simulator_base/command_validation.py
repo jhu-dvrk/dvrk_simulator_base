@@ -5,9 +5,7 @@ from __future__ import annotations
 from typing import Iterable
 
 import numpy as np
-
-from crtk.rotations import quaternion_matrix_xyzw
-from crtk.types import Pose
+import PyKDL
 
 
 def joint_positions_from_message(message, expected_names: Iterable[str]) -> np.ndarray:
@@ -49,21 +47,23 @@ def jaw_position_from_message(message) -> float:
     return value
 
 
-def pose_from_message(message) -> Pose:
-    """Return a validated pose from a ROS ``Pose`` or ``PoseStamped`` value."""
+def pose_from_message(message) -> PyKDL.Frame:
+    """Return a validated PyKDL.Frame from a ROS ``Pose`` or ``PoseStamped`` value."""
+    import math
+
     value = message.pose if hasattr(message, "pose") else message
-    position = np.asarray(
-        [value.position.x, value.position.y, value.position.z], dtype=float
-    )
-    quaternion = np.asarray(
-        [
-            value.orientation.x,
-            value.orientation.y,
-            value.orientation.z,
-            value.orientation.w,
-        ],
-        dtype=float,
-    )
-    if not np.all(np.isfinite(position)):
+    if not (np.isfinite(value.position.x) and np.isfinite(value.position.y) and np.isfinite(value.position.z)):
         raise ValueError("Cartesian command position must be finite")
-    return Pose(position, quaternion_matrix_xyzw(quaternion))
+    qx = float(value.orientation.x)
+    qy = float(value.orientation.y)
+    qz = float(value.orientation.z)
+    qw = float(value.orientation.w)
+    if not (np.isfinite(qx) and np.isfinite(qy) and np.isfinite(qz) and np.isfinite(qw)):
+        raise ValueError("Cartesian command orientation must be finite")
+    norm = math.sqrt(qx * qx + qy * qy + qz * qz + qw * qw)
+    if norm == 0.0:
+        raise ValueError("quaternion cannot be zero")
+    qx, qy, qz, qw = qx / norm, qy / norm, qz / norm, qw / norm
+    position = PyKDL.Vector(value.position.x, value.position.y, value.position.z)
+    rotation = PyKDL.Rotation.Quaternion(qx, qy, qz, qw)
+    return PyKDL.Frame(rotation, position)
