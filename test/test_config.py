@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from dvrk_simulator_base.config import load_robot_config, load_robot_document
+from crtk.config import load_robot_config, load_robot_document
 
 
 ROOT = Path(__file__).parents[1]

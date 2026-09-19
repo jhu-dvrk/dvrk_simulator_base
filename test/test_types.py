@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from dvrk_simulator_base.types import IKResult, JointState, Pose, Twist
+from crtk.types import IKResult, JointState, Pose, Twist
 
 
 def test_pose_owns_read_only_arrays():

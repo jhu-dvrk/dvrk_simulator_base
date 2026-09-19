@@ -7,8 +7,8 @@ from dvrk_simulator_base.ros_messages import (
     operating_state_message,
     pose_stamped_message,
 )
-from dvrk_simulator_base.snapshots import OperatingStateSnapshot
-from dvrk_simulator_base.types import JointState, Pose
+from crtk.snapshots import OperatingStateSnapshot
+from crtk.types import JointState, Pose
 
 
 def test_joint_state_message_preserves_order_and_frame():

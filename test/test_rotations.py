@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from dvrk_simulator_base.rotations import (
+from crtk.rotations import (
     quaternion_matrix_xyzw,
     rotation_to_quaternion_xyzw,
 )

@@ -8,7 +8,7 @@ from dvrk_simulator_base.cartesian_frames import (
     relative_twist,
     view_pose_from_optical,
 )
-from dvrk_simulator_base.types import Pose, Twist
+from crtk.types import Pose, Twist
 
 
 def test_pose_compose_inverse_and_relative_round_trip():

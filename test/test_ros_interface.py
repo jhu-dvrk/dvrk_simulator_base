@@ -1,8 +1,8 @@
 import numpy as np
 
 from dvrk_simulator_base.ros_interface import LatestSnapshot
-from dvrk_simulator_base.snapshots import ArmSnapshot, OperatingStateSnapshot
-from dvrk_simulator_base.types import JointState, Pose, Twist
+from crtk.snapshots import ArmSnapshot, OperatingStateSnapshot
+from crtk.types import JointState, Pose, Twist
 
 
 def _snapshot(state, event=False):

@@ -11,9 +11,9 @@ try:
 except (ImportError, SystemExit):
     pytest.skip("PyQt6 is required for SimulatorArmWidget tests", allow_module_level=True)
 
-from dvrk_simulator_base.config import JointConfig, RobotConfig
-from dvrk_simulator_base.snapshots import ArmSnapshot, OperatingStateSnapshot
-from dvrk_simulator_base.types import JointState, Pose, Twist
+from crtk.config import JointConfig, RobotConfig
+from crtk.snapshots import ArmSnapshot, OperatingStateSnapshot
+from crtk.types import JointState, Pose, Twist
 
 
 @pytest.fixture

@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from dvrk_simulator_base.snapshots import ArmSnapshot, OperatingStateSnapshot
-from dvrk_simulator_base.types import JointState, Pose, Twist
+from crtk.snapshots import ArmSnapshot, OperatingStateSnapshot
+from crtk.types import JointState, Pose, Twist
 
 
 def make_snapshot(simulation_time=0.0):

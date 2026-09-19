@@ -14,9 +14,9 @@ except ImportError as error:
         "error: SimulatorArmWidget requires PyQt6; install it in the dVRK environment"
     ) from error
 
-from .config import JointConfig, RobotConfig
-from .snapshots import ArmSnapshot
-from .types import Pose
+from crtk.config import JointConfig, RobotConfig
+from crtk.snapshots import ArmSnapshot
+from crtk.types import Pose
 
 
 def _rpy_from_matrix(rotation: np.ndarray) -> tuple[float, float, float]:

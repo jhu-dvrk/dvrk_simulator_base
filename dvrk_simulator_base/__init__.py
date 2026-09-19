@@ -1,10 +1,10 @@
 """Simulator-independent contracts and behavior for dVRK simulators."""
 
-from .config import JointConfig, RobotConfig, load_robot_config, load_robot_document
+from crtk.config import JointConfig, RobotConfig, load_robot_config, load_robot_document
 from .operating_state import CRTKOperatingState
 from .scene import SceneResolver
-from .snapshots import ArmSnapshot, OperatingStateSnapshot
-from .types import IKResult, JointState, Pose, Twist
+from crtk.snapshots import ArmSnapshot, OperatingStateSnapshot
+from crtk.types import IKResult, JointState, Pose, Twist
 
 __all__ = [
     "ArmSnapshot",

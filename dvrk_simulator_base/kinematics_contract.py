@@ -6,7 +6,7 @@ from typing import Protocol
 
 import numpy as np
 
-from .types import IKResult, JointState, Pose, Twist
+from crtk.types import IKResult, JointState, Pose, Twist
 
 
 class KinematicsBackend(Protocol):

@@ -8,7 +8,7 @@ from typing import Any, Sequence
 
 import yaml
 
-from .config import RobotConfig, load_robot_config, with_base_pose
+from crtk.config import RobotConfig, load_robot_config, with_base_pose
 
 
 @dataclass(frozen=True)

@@ -8,12 +8,12 @@ import threading
 from .cartesian_frames import compose_pose, relative_pose, relative_twist, view_pose_from_optical
 from .command_mailbox import CommandMailboxes
 from .command_validation import jaw_position_from_message, joint_positions_from_message, pose_from_message
-from .config import RobotConfig
+from crtk.config import RobotConfig
 from .ros_messages import joint_state_message, operating_state_message, pose_stamped_message, string_stamped_message, twist_stamped_message
 from .ros_qos import transient_local_event_qos, transient_local_latched_qos
-from .rotations import quaternion_matrix_xyzw
-from .snapshots import ArmSnapshot, OperatingStateSnapshot
-from .types import JointState, Pose
+from crtk.rotations import quaternion_matrix_xyzw
+from crtk.snapshots import ArmSnapshot, OperatingStateSnapshot
+from crtk.types import JointState, Pose
 
 
 class LatestSnapshot:
