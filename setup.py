@@ -27,9 +27,6 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", [f"resource/{package_name}"]),
         (f"share/{package_name}", ["package.xml"]),
-        (f"share/{package_name}/share/arms", [
-            str(path) for path in sorted(Path("share/arms").glob("*.yaml"))
-        ]),
         (f"share/{package_name}/share/exercises", [
             str(path) for path in sorted(Path("share/exercises").glob("*.yaml"))
         ]),
@@ -43,8 +40,8 @@ setup(
         ],
     },
     zip_safe=True,
-    maintainer="dVRK maintainers",
-    maintainer_email="support@intusurg.com",
+    maintainer="Anton Deguet",
+    maintainer_email="anton.deguet@jhu.edu",
     description="Simulator-independent CRTK behavior and contracts for dVRK simulators.",
     license="Apache-2.0",
 )

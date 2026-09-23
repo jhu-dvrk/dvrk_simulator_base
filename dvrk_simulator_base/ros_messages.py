@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-import PyKDL
-
-from dvrk.snapshots import OperatingStateSnapshot
-from dvrk.types import JointState
+from .rotations import rotation_to_quaternion_xyzw
+from .snapshots import OperatingStateSnapshot
+from .types import JointState, Pose, Twist
 
 
 def joint_state_message(state: JointState, stamp, frame_id: str):
@@ -22,35 +21,31 @@ def joint_state_message(state: JointState, stamp, frame_id: str):
     return message
 
 
-def pose_stamped_message(pose: PyKDL.Frame, stamp, frame_id: str):
+def pose_stamped_message(pose: Pose, stamp, frame_id: str):
     from geometry_msgs.msg import PoseStamped
 
     message = PoseStamped()
     message.header.stamp = stamp
     message.header.frame_id = frame_id
-    message.pose.position.x = float(pose.p[0])
-    message.pose.position.y = float(pose.p[1])
-    message.pose.position.z = float(pose.p[2])
-    qx, qy, qz, qw = pose.M.GetQuaternion()
-    message.pose.orientation.x = float(qx)
-    message.pose.orientation.y = float(qy)
-    message.pose.orientation.z = float(qz)
-    message.pose.orientation.w = float(qw)
+    message.pose.position.x, message.pose.position.y, message.pose.position.z = pose.position
+    quaternion = rotation_to_quaternion_xyzw(pose.orientation)
+    (
+        message.pose.orientation.x,
+        message.pose.orientation.y,
+        message.pose.orientation.z,
+        message.pose.orientation.w,
+    ) = quaternion
     return message
 
 
-def twist_stamped_message(twist: PyKDL.Twist, stamp, frame_id: str):
+def twist_stamped_message(twist: Twist, stamp, frame_id: str):
     from geometry_msgs.msg import TwistStamped
 
     message = TwistStamped()
     message.header.stamp = stamp
     message.header.frame_id = frame_id
-    message.twist.linear.x = float(twist.vel[0])
-    message.twist.linear.y = float(twist.vel[1])
-    message.twist.linear.z = float(twist.vel[2])
-    message.twist.angular.x = float(twist.rot[0])
-    message.twist.angular.y = float(twist.rot[1])
-    message.twist.angular.z = float(twist.rot[2])
+    message.twist.linear.x, message.twist.linear.y, message.twist.linear.z = twist.linear
+    message.twist.angular.x, message.twist.angular.y, message.twist.angular.z = twist.angular
     return message
 
 

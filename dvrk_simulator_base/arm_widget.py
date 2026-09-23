@@ -14,10 +14,9 @@ except ImportError as error:
         "error: SimulatorArmWidget requires PyQt6; install it in the dVRK environment"
     ) from error
 
-import PyKDL
-
-from dvrk.config import JointConfig, RobotConfig
-from dvrk.snapshots import ArmSnapshot
+from dvrk_arm_description import JointConfig, RobotConfig
+from .snapshots import ArmSnapshot
+from .types import Pose
 
 
 def _rpy_from_matrix(rotation: np.ndarray) -> tuple[float, float, float]:
@@ -311,10 +310,17 @@ class SimulatorArmWidget(QtWidgets.QWidget):
         pitch = math.radians(self._cart_spinners[4].value())
         yaw = math.radians(self._cart_spinners[5].value())
 
-        pose = PyKDL.Frame(
-            PyKDL.Rotation.RPY(roll, pitch, yaw),
-            PyKDL.Vector(x, y, z),
-        )
+        position = np.array([x, y, z], dtype=float)
+        cr, sr = math.cos(roll), math.sin(roll)
+        cp, sp = math.cos(pitch), math.sin(pitch)
+        cy, sy = math.cos(yaw), math.sin(yaw)
+        orientation = np.array([
+            [cy * cp, cy * sp * sr - sy * cr, cy * sp * cr + sy * sr],
+            [sy * cp, sy * sp * sr + cy * cr, sy * sp * cr - cy * sr],
+            [-sp, cp * sr, cp * cr],
+        ], dtype=float)
+
+        pose = Pose(position, orientation)
         if self.on_cartesian_command is not None:
             self.on_cartesian_command(pose)
         self._cartesian_dirty = False
@@ -364,19 +370,11 @@ class SimulatorArmWidget(QtWidgets.QWidget):
 
             # Update Cartesian pose
             pose = snapshot.measured_cp_world
-            if pose is not None:
-                if hasattr(pose, "p") and hasattr(pose, "M"):
-                    x_mm = float(pose.p[0]) * 1000.0
-                    y_mm = float(pose.p[1]) * 1000.0
-                    z_mm = float(pose.p[2]) * 1000.0
-                    roll, pitch, yaw = pose.M.GetRPY()
-                elif hasattr(pose, "position") and hasattr(pose, "orientation"):
-                    x_mm = float(pose.position[0]) * 1000.0
-                    y_mm = float(pose.position[1]) * 1000.0
-                    z_mm = float(pose.position[2]) * 1000.0
-                    roll, pitch, yaw = _rpy_from_matrix(pose.orientation)
-                else:
-                    x_mm = y_mm = z_mm = roll = pitch = yaw = 0.0
+            if pose is not None and hasattr(pose, "position") and hasattr(pose, "orientation"):
+                x_mm = float(pose.position[0]) * 1000.0
+                y_mm = float(pose.position[1]) * 1000.0
+                z_mm = float(pose.position[2]) * 1000.0
+                roll, pitch, yaw = _rpy_from_matrix(pose.orientation)
                 cart_values = [
                     x_mm,
                     y_mm,

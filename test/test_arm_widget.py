@@ -11,11 +11,9 @@ try:
 except (ImportError, SystemExit):
     pytest.skip("PyQt6 is required for SimulatorArmWidget tests", allow_module_level=True)
 
-import PyKDL
-
-from dvrk.config import JointConfig, RobotConfig
-from dvrk.snapshots import ArmSnapshot, OperatingStateSnapshot
-from dvrk.types import JointState
+from dvrk_arm_description import JointConfig, RobotConfig
+from dvrk_simulator_base.snapshots import ArmSnapshot, OperatingStateSnapshot
+from dvrk_simulator_base.types import JointState, Pose, Twist
 
 
 @pytest.fixture
@@ -109,8 +107,13 @@ def test_arm_widget_updates_when_visible(qapp, psm_config):
     # Orientation: 90 deg pitch (R_y(pi/2))
     # XYZ convention: pitch = pi/2 -> rotation matrix
     pitch = math.radians(45.0)
-    pitch = math.radians(45.0)
-    pos = (0.05, -0.1, 0.2)  # 50 mm, -100 mm, 200 mm
+    cp, sp = math.cos(pitch), math.sin(pitch)
+    rot = np.array([
+        [cp, 0.0, sp],
+        [0.0, 1.0, 0.0],
+        [-sp, 0.0, cp],
+    ])
+    pos = np.array([0.05, -0.1, 0.2])  # 50 mm, -100 mm, 200 mm
 
     snapshot = ArmSnapshot(
         sequence=1,
@@ -118,9 +121,9 @@ def test_arm_widget_updates_when_visible(qapp, psm_config):
         valid=True,
         measured_js=JointState(("yaw", "insertion"), np.array([math.radians(30.0), 0.05]), np.zeros(2)),
         setpoint_js=JointState(("yaw", "insertion"), np.zeros(2), np.zeros(2)),
-        measured_cp_world=PyKDL.Frame(PyKDL.Rotation.RPY(0.0, pitch, 0.0), PyKDL.Vector(*pos)),
-        setpoint_cp_world=PyKDL.Frame(),
-        measured_cv_world=PyKDL.Twist(),
+        measured_cp_world=Pose(pos, rot),
+        setpoint_cp_world=Pose(np.zeros(3), np.eye(3)),
+        measured_cv_world=Twist(np.zeros(3), np.zeros(3)),
         jaw_measured=math.radians(15.0),
         jaw_setpoint=math.radians(15.0),
         operating_state=OperatingStateSnapshot("ENABLED", True, True),
@@ -199,7 +202,8 @@ def test_arm_widget_commands_and_dirty_handling(qapp, psm_config):
     widget.cart_apply_btn.click()
     assert len(cart_cmds) == 1
     pose = cart_cmds[0]
-    assert np.allclose([pose.p[0], pose.p[1], pose.p[2]], [0.15, -0.05, 0.25])
-    _r, p, _y = pose.M.GetRPY()
-    assert np.isclose(p, math.radians(30.0))
+    assert np.allclose(pose.position, [0.15, -0.05, 0.25])
+    expected_pitch = math.radians(30.0)
+    assert np.isclose(pose.orientation[0, 0], math.cos(expected_pitch))
+    assert np.isclose(pose.orientation[0, 2], math.sin(expected_pitch))
     assert not widget._cartesian_dirty

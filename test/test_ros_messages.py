@@ -1,5 +1,4 @@
 import numpy as np
-import PyKDL
 
 from builtin_interfaces.msg import Time
 
@@ -8,8 +7,8 @@ from dvrk_simulator_base.ros_messages import (
     operating_state_message,
     pose_stamped_message,
 )
-from dvrk.snapshots import OperatingStateSnapshot
-from dvrk.types import JointState
+from dvrk_simulator_base.snapshots import OperatingStateSnapshot
+from dvrk_simulator_base.types import JointState, Pose
 
 
 def test_joint_state_message_preserves_order_and_frame():
@@ -26,7 +25,7 @@ def test_joint_state_message_preserves_order_and_frame():
 
 def test_pose_and_operating_state_messages():
     stamp = Time()
-    pose = pose_stamped_message(PyKDL.Frame(), stamp, "world")
+    pose = pose_stamped_message(Pose(np.zeros(3), np.eye(3)), stamp, "world")
     assert pose.pose.orientation.w == 1.0
     state = operating_state_message(
         OperatingStateSnapshot("ENABLED", True, False), stamp, "world"
