@@ -34,7 +34,7 @@ setup(
             str(path) for path in sorted(Path("share/scenes").glob("*.yaml"))
         ]),
     ] + asset_data_files(),
-    install_requires=["setuptools", "numpy", "PyYAML"],
+    install_requires=["setuptools", "numpy", "PyYAML", "xacro"],
     entry_points={
         "console_scripts": [
             "generate_cart_frames = dvrk_simulator_base.cart_frames:main",
