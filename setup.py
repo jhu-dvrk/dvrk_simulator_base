@@ -33,6 +33,7 @@ setup(
         (f"share/{package_name}/share/scenes", [
             str(path) for path in sorted(Path("share/scenes").glob("*.yaml"))
         ]),
+        (f"share/{package_name}/scripts", ["scripts/bootstrap_venv.sh"]),
     ] + asset_data_files(),
     install_requires=["setuptools", "numpy", "PyYAML", "xacro"],
     entry_points={
