@@ -21,10 +21,4 @@ __all__ = [
     "load_robot_document",
 ]
 
-try:
-    from .arm_widget import SimulatorArmWidget
-    __all__.append("SimulatorArmWidget")
-except (ImportError, SystemExit):
-    pass
-
 __version__ = "0.1.0"
