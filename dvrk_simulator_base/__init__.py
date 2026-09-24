@@ -1,6 +1,11 @@
 """Simulator-independent contracts and behavior for dVRK simulators."""
 
-from .config import JointConfig, RobotConfig, load_robot_config, load_robot_document
+from dvrk_arm_description import (
+    JointConfig,
+    RobotConfig,
+    load_robot_config,
+    load_robot_document,
+)
 from .operating_state import CRTKOperatingState
 from .scene import SceneResolver
 from .snapshots import ArmSnapshot, OperatingStateSnapshot
@@ -20,11 +25,5 @@ __all__ = [
     "load_robot_config",
     "load_robot_document",
 ]
-
-try:
-    from .arm_widget import SimulatorArmWidget
-    __all__.append("SimulatorArmWidget")
-except (ImportError, SystemExit):
-    pass
 
 __version__ = "0.1.0"

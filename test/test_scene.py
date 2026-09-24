@@ -5,6 +5,9 @@ import numpy as np
 from dvrk_simulator_base.scene import SceneResolver, load_scene_config
 
 
+ARM_ROOT = Path(__file__).parents[2] / "dvrk_arm_description" / "arms"
+
+
 def test_scene_resolver_lists_available_scenes_and_search_paths(tmp_path):
     first = tmp_path / "first"
     second = tmp_path / "second"
@@ -29,7 +32,6 @@ def test_scene_resolver_lists_available_scenes_and_search_paths(tmp_path):
 
 
 def test_scene_loads_robots_assets_and_frame_overrides(tmp_path):
-    arm_root = Path(__file__).parents[1] / "share" / "arms"
     scene = tmp_path / "scene.yaml"
     scene.write_text(
         """scene:
@@ -42,7 +44,7 @@ def test_scene_loads_robots_assets_and_frame_overrides(tmp_path):
 """,
         encoding="utf-8",
     )
-    result = load_scene_config(scene, robot_config_root=arm_root)
+    result = load_scene_config(scene, robot_config_root=ARM_ROOT)
     assert result.name == "two_arms"
     assert [robot.name for robot in result.robots] == ["PSM1", "ECM"]
     np.testing.assert_allclose(result.robots[0].base_position, [0.1, 0.2, 0.3])
@@ -62,7 +64,6 @@ def test_scene_resolver_resolve_all(tmp_path):
 
 
 def test_scene_loads_multiple_scene_files(tmp_path):
-    arm_root = Path(__file__).parents[1] / "share" / "arms"
     scene_robots = tmp_path / "robots.yaml"
     scene_robots.write_text(
         """scene:
@@ -86,7 +87,9 @@ def test_scene_loads_multiple_scene_files(tmp_path):
         encoding="utf-8",
     )
 
-    result = load_scene_config([scene_robots, scene_exercise], robot_config_root=arm_root)
+    result = load_scene_config(
+        [scene_robots, scene_exercise], robot_config_root=ARM_ROOT
+    )
     assert result.name == "cart+task"
     assert [robot.name for robot in result.robots] == ["PSM1"]
     assert len(result.objects) == 1
@@ -94,7 +97,6 @@ def test_scene_loads_multiple_scene_files(tmp_path):
 
 
 def test_scene_loads_included_scene_files(tmp_path):
-    arm_root = Path(__file__).parents[1] / "share" / "arms"
     exercise = tmp_path / "exercise.yaml"
     exercise.write_text(
         """scene:
@@ -120,7 +122,7 @@ def test_scene_loads_included_scene_files(tmp_path):
         encoding="utf-8",
     )
 
-    result = load_scene_config(main_scene, robot_config_root=arm_root)
+    result = load_scene_config(main_scene, robot_config_root=ARM_ROOT)
     assert "main_scene" in result.name
     assert [robot.name for robot in result.robots] == ["PSM1"]
     assert len(result.objects) == 1
@@ -152,4 +154,3 @@ def test_scene_detects_circular_includes(tmp_path):
         assert "Circular scene include detected" in str(error)
     else:
         raise AssertionError("expected circular include error was not raised")
-

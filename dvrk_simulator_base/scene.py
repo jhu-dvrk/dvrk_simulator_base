@@ -8,7 +8,7 @@ from typing import Any, Sequence
 
 import yaml
 
-from .config import RobotConfig, load_robot_config, with_base_pose
+from dvrk_arm_description import RobotConfig, load_robot_config, with_base_pose
 
 
 @dataclass(frozen=True)
@@ -186,7 +186,7 @@ def load_scene_config(
     robot_config_root: str | Path | None = None,
     resolver: SceneResolver | None = None,
 ) -> SceneConfig:
-    """Load one or more scene files and resolve robot configurations, frames, and objects."""
+    """Load one or more scene files and resolve robots, frames, and objects."""
     if isinstance(path, (str, Path)):
         sources = [Path(path).expanduser()]
     elif isinstance(path, (list, tuple)):
