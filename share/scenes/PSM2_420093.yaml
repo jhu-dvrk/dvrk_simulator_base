@@ -1,0 +1,6 @@
+scene:
+  name: PSM2_420093
+  frames:
+    PSM2: {position: [0.0, 0.0, 0.173205081], orientation_xyzw: [0.0, 0.0, 0.0, 1.0]}
+  robots:
+    - {config: PSM2.yaml, instrument: "420093"}

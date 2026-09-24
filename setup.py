@@ -30,6 +30,9 @@ setup(
         (f"share/{package_name}/share/exercises", [
             str(path) for path in sorted(Path("share/exercises").glob("*.yaml"))
         ]),
+        (f"share/{package_name}/share/scenes", [
+            str(path) for path in sorted(Path("share/scenes").glob("*.yaml"))
+        ]),
     ] + asset_data_files(),
     install_requires=["setuptools", "numpy", "PyYAML"],
     entry_points={
