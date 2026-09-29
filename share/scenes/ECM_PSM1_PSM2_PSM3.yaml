@@ -53,6 +53,10 @@ scene:
     encoding: rgba8
     baseline_m: 0.006
     publish_rate_hz: 30.0
+    # Prefer faster EGL rendering for OpenXR.  Disabling the camera shadow
+    # pass lowers GPU work while preserving the current 1280x720-per-eye size.
+    light:
+      enabled: false
     transports:
     - unixfd
     - rtsp
