@@ -10,7 +10,7 @@ from .command_validation import jaw_position_from_message, joint_positions_from_
 from dvrk_arm_description import RobotConfig
 from .ros_messages import joint_state_message, operating_state_message, pose_stamped_message, string_stamped_message, twist_stamped_message
 from .ros_qos import transient_local_event_qos, transient_local_latched_qos
-from .snapshots import ArmSnapshot, OperatingStateSnapshot
+from .snapshots import ArmSnapshot
 from .types import JointState
 
 

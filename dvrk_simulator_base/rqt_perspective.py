@@ -25,7 +25,6 @@ def write_monitor_perspective(
     include_console: bool = False,
 ) -> Path:
     """Write a single-rqt perspective with a tabbed dVRK Arms dock."""
-    arm_names = tuple(dict.fromkeys(str(name) for name in arms))
     plugins = {
         "rqt_dvrk/Arms": [1],
         "rqt_dvrk/Diagnostics": [1],
