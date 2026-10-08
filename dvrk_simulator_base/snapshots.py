@@ -17,6 +17,18 @@ class OperatingStateSnapshot:
 
 
 @dataclass(frozen=True)
+class ArmPublicationFrames:
+    """Cartesian values converted by the simulator for ROS publication."""
+
+    frame_id: str
+    measured_cp: Pose
+    setpoint_cp: Pose
+    measured_cv: Twist
+    local_measured_cp: Pose | None = None
+    local_setpoint_cp: Pose | None = None
+
+
+@dataclass(frozen=True)
 class ArmSnapshot:
     sequence: int
     simulation_time: float
@@ -30,6 +42,7 @@ class ArmSnapshot:
     jaw_setpoint: float | None
     operating_state: OperatingStateSnapshot
     operating_state_event: bool = False
+    publication_frames: ArmPublicationFrames | None = None
 
     def __post_init__(self) -> None:
         if self.sequence < 0:

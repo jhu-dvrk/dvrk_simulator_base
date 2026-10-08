@@ -176,20 +176,3 @@ def materialize_virtual_robot(
         metadata_path=metadata_path,
         content_hash=content_hash,
     )
-
-
-def materialize_virtual_psm(
-    model: str = "PSM1",
-    instrument: str = "420006",
-    parent_link: str = "world",
-    generated_root: str | Path | None = None,
-    error_cls: type[Exception] = RuntimeError,
-) -> MaterializedUrdf:
-    """Compatibility wrapper for the original PSM-only entry point."""
-    return materialize_virtual_robot(
-        model,
-        instrument=instrument,
-        parent_link=parent_link,
-        generated_root=generated_root,
-        error_cls=error_cls,
-    )

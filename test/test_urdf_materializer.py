@@ -3,7 +3,6 @@ from pathlib import Path
 
 from dvrk_simulator_base.urdf_materializer import (
     default_generated_root,
-    materialize_virtual_psm,
     materialize_virtual_robot,
 )
 
@@ -14,8 +13,8 @@ def test_generated_root_is_cache_directory():
 
 
 def test_virtual_psm1_is_expanded_and_cached(tmp_path):
-    first = materialize_virtual_psm(generated_root=tmp_path)
-    second = materialize_virtual_psm(generated_root=tmp_path)
+    first = materialize_virtual_robot("PSM1", instrument="420006", generated_root=tmp_path)
+    second = materialize_virtual_robot("PSM1", instrument="420006", generated_root=tmp_path)
 
     assert first == second
     assert first.urdf_path.is_file()

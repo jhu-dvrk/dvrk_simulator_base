@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import numpy as np
+from ament_index_python.packages import get_package_share_directory
 
 from dvrk_simulator_base.scene import SceneResolver, load_scene_config
 
@@ -29,7 +30,7 @@ def test_scene_resolver_lists_available_scenes_and_search_paths(tmp_path):
 
 
 def test_scene_loads_robots_assets_and_frame_overrides(tmp_path):
-    arm_root = Path(__file__).parents[1] / "share" / "arms"
+    arm_root = Path(get_package_share_directory("dvrk_arm_description")) / "arms"
     scene = tmp_path / "scene.yaml"
     scene.write_text(
         """scene:
@@ -62,7 +63,7 @@ def test_scene_resolver_resolve_all(tmp_path):
 
 
 def test_scene_loads_multiple_scene_files(tmp_path):
-    arm_root = Path(__file__).parents[1] / "share" / "arms"
+    arm_root = Path(get_package_share_directory("dvrk_arm_description")) / "arms"
     scene_robots = tmp_path / "robots.yaml"
     scene_robots.write_text(
         """scene:
@@ -94,7 +95,7 @@ def test_scene_loads_multiple_scene_files(tmp_path):
 
 
 def test_scene_loads_included_scene_files(tmp_path):
-    arm_root = Path(__file__).parents[1] / "share" / "arms"
+    arm_root = Path(get_package_share_directory("dvrk_arm_description")) / "arms"
     exercise = tmp_path / "exercise.yaml"
     exercise.write_text(
         """scene:

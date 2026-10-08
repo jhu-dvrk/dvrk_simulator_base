@@ -52,13 +52,3 @@ def relative_twist(pose: Pose, twist: Twist, reference: Pose,
     angular = twist.angular - reference_twist.angular
     rotation = reference.orientation.T
     return Twist(rotation @ linear, rotation @ angular)
-
-
-# Temporary private aliases ease copying tests and call sites while the new
-# package API settles. They are not compatibility imports from Isaac Sim.
-_compose_pose = compose_pose
-_inverse_pose = inverse_pose
-_relative_pose = relative_pose
-_view_pose_from_optical = view_pose_from_optical
-_relative_twist = relative_twist
-

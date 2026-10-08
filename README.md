@@ -1,7 +1,7 @@
 # dvrk_simulator_base
 
 Shared, simulator-independent contracts and CRTK behavior for dVRK simulation
-backends. This package must not import Isaac Sim or PyBullet.
+backends. This package must not import Isaac Sim, Newton, Warp, or PyBullet.
 
 The initial implementation contains validated immutable core types, quaternion
 conversions with explicit ROS XYZW ordering, robot configuration, Cartesian
@@ -47,3 +47,40 @@ ros2 run dvrk_simulator_base cart_frame_editor
 
 PyQt6 is intentionally optional: it is required only for the editor, not for
 using simulator backends or generating YAML from the command line.
+
+## Unix socket process boundary
+
+`ipc.UnixSocketEndpoint` provides versioned JSON framing over a private Unix
+stream socket. Endpoints have one owner thread, bounded nonblocking writes,
+ordered reliable messages, and replaceable unsent snapshots. Partially sent
+frames are never replaced. Serialized values include commands, complete arm
+snapshots, operating-state events, and simulation-owned publication frames;
+ROS messages, callbacks, and backend objects cannot be serialized.
+
+`CartesianCommand` carries a validated pose and its original `frame_id`.
+`resolve_cartesian_command` runs in the simulator using authoritative ECM
+state. `with_publication_frames` derives all Cartesian publication values
+from the same completed scene. `ArmRosInterface` publishes these values and
+passes Cartesian commands through without converting their reference frames.
+
+`SimulatorRosNode`, `SimulationProcess`, and `process_worker.run_worker` own
+shared ROS publication, session startup, one-batch command acknowledgement,
+ordered event delivery, step pacing, diagnostics, and supervised shutdown.
+Newton and PyBullet provide scene initialization and engine-specific runtime
+steps. The simulation interpreter is selected independently of ROS Python.
+The worker and transport have no ROS or GPU dependencies. Isaac retains its
+existing in-process adapter.
+
+All IPC backends publish the same five metrics on `/diagnostics`:
+
+- `simulation_hz`: completed world steps per wall-clock second in the worker.
+- `camera_hz`: completed frames pushed to the camera video sink per second.
+- `state_publish_hz`: actual complete-scene ROS publication cycles per second.
+- `snapshot_receive_hz`: complete-scene snapshots accepted by ROS per second.
+- `snapshot_age_ms`: elapsed time since the last accepted snapshot was captured
+  in the simulation process, including time spent in IPC queues and transit.
+
+Rates use measured sampling intervals. Camera rate is zero when disabled;
+state publication is zero until initialization finishes. The frontend uses a
+single ROS executor thread, so snapshots and events need no handoff locks.
+Operating-state events are transported separately from replaceable snapshots.

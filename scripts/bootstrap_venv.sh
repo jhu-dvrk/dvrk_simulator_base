@@ -2,6 +2,7 @@
 set -euo pipefail
 
 # Generic virtualenv bootstrap for dVRK workspace packages.
+# DVRK_BOOTSTRAP_BUILD_REQUIREMENTS optionally installs native build dependencies first.
 # Usage: bootstrap_venv.sh <venv_name> <requirements_file> <display_name> [test_command] [flags...]
 # Example: bootstrap_venv.sh .venv-newton requirements.txt "NVIDIA Newton" "-c 'import newton'" -y
 
@@ -72,7 +73,7 @@ if [[ "${PROCEED}" = false ]]; then
                 ;;
             *)
                 echo "Operation cancelled."
-                exit 0
+                exit 130
                 ;;
         esac
     fi
@@ -101,6 +102,9 @@ fi
 
 echo "Installing dependencies from ${REQUIREMENTS_FILE}..."
 "${VENV_PYTHON}" -m pip install --upgrade pip
+if [[ -n "${DVRK_BOOTSTRAP_BUILD_REQUIREMENTS:-}" ]]; then
+    "${VENV_PYTHON}" -m pip install -r "${DVRK_BOOTSTRAP_BUILD_REQUIREMENTS}"
+fi
 "${VENV_PYTHON}" -m pip install -r "${REQUIREMENTS_FILE}"
 
 echo
