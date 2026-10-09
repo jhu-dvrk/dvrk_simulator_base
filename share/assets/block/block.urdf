@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!-- SPDX-License-Identifier: Apache-2.0 -->
-<robot name="dvrk_pybullet_grasp_block">
+<robot name="dvrk_simulator_grasp_block">
   <link name="block">
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>

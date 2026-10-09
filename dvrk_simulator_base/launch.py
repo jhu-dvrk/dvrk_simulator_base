@@ -132,11 +132,14 @@ def simulator_launch(package, *, profile=None, exercise_argument="scene"):
     return LaunchDescription(arguments + [OpaqueFunction(function=start_session, args=[package, profile])])
 
 
-def jhu_launch(platform, backend):
+def jhu_launch(platform, package):
+    if not package.startswith("dvrk_"):
+        raise ValueError(f"package name must start with 'dvrk_': got {package!r}")
+    backend = package.removeprefix("dvrk_")
     directory = Path(get_package_share_directory("dvrk_config_jhu")).parent / platform
     profile = directory / backend
     label = {"newton": "Newton", "pybullet": "PyBullet", "isaac_sim": "IsaacSim"}[backend]
-    return simulator_launch(f"dvrk_{backend}", profile=SystemProfile(
+    return simulator_launch(package, profile=SystemProfile(
         config=profile / f"{backend}_patient_cart.yaml",
         cart_scene=profile / "ECM_PSM1_PSM2_PSM3.yaml",
         system_config=profile / f"system-MTMR-MTML-{label}-Teleop.json", cwd=directory,
@@ -144,14 +147,16 @@ def jhu_launch(platform, backend):
     ), exercise_argument="exercise")
 
 
-def open_xr_launch(backend):
-    package = f"dvrk_{backend}"
+def open_xr_launch(package):
+    if not package.startswith("dvrk_"):
+        raise ValueError(f"package name must start with 'dvrk_': got {package!r}")
+    backend = package.removeprefix("dvrk_")
     directory = Path(get_package_share_directory(package)) / "share/open-xr"
     return simulator_launch(package, profile=SystemProfile(
         config=directory / f"{backend}.yaml",
-        cart_scene="ECM_PSM1_PSM2_PSM3_stereo_rtsp.yaml" if backend == "isaac_sim" else "ECM_PSM1_PSM2_PSM3.yaml",
+        cart_scene="ECM_PSM1_PSM2_PSM3_stereo_rtsp.yaml" if package == "dvrk_isaac_sim" else "ECM_PSM1_PSM2_PSM3.yaml",
         system_config=directory / "system-MTML-MTMR-OpenXR-patient-cart-ROS.json", cwd=directory,
-        display_config=None if backend == "isaac_sim" else directory / "dvrk-console-overlay.json",
+        display_config=None if package == "dvrk_isaac_sim" else directory / "dvrk-console-overlay.json",
         auto_start=True,
     ))
 

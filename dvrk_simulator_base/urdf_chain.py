@@ -31,6 +31,47 @@ class _Joint:
     offset: float = 0.0
 
 
+@dataclass(frozen=True)
+class MimicJoint:
+    """URDF mimic joint relationship."""
+    joint_name: str
+    source_joint_name: str
+    multiplier: float = 1.0
+    offset: float = 0.0
+
+
+def extract_mimic_joints(
+    urdf_source: str | Path | ET.Element,
+    *,
+    error_cls: type[Exception] = ValueError,
+) -> tuple[MimicJoint, ...]:
+    """Parse all valid one-level mimic joint relations from a URDF."""
+    if isinstance(urdf_source, ET.Element):
+        root = urdf_source
+    else:
+        root = ET.parse(urdf_source).getroot()
+    joint_elements = root.findall("joint")
+    all_joint_names = {j.attrib.get("name", "") for j in joint_elements}
+    mimic_joints: list[MimicJoint] = []
+    for joint in joint_elements:
+        joint_name = joint.attrib.get("name", "")
+        mimic = joint.find("mimic")
+        if mimic is None:
+            continue
+        source_name = mimic.attrib.get("joint", "")
+        if not source_name or source_name not in all_joint_names:
+            raise error_cls(f"mimic relationship references an unknown joint: {joint_name} -> {source_name}")
+        try:
+            multiplier = float(mimic.attrib.get("multiplier", "1.0"))
+            offset = float(mimic.attrib.get("offset", "0.0"))
+        except (TypeError, ValueError) as error:
+            raise error_cls(f"mimic values must be numeric for {joint_name}: {error}") from error
+        if not (np.isfinite(multiplier) and np.isfinite(offset)):
+            raise error_cls(f"mimic values must be finite for {joint_name}")
+        mimic_joints.append(MimicJoint(joint_name, source_name, multiplier, offset))
+    return tuple(mimic_joints)
+
+
 class UrdfChain:
     """Evaluate one root-to-tool chain in the same world frame as the simulator."""
 

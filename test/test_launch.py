@@ -40,3 +40,13 @@ def test_simulator_uses_ros_python_and_only_explicit_headless_override(tmp_path,
         assert command[command.index('--headless') + 1] == override
     else:
         assert '--headless' not in command
+
+
+def test_open_xr_launch_requires_dvrk_prefix():
+    with pytest.raises(ValueError, match="package name must start with 'dvrk_'"):
+        launch_module.open_xr_launch("pybullet")
+
+
+def test_jhu_launch_requires_dvrk_prefix():
+    with pytest.raises(ValueError, match="package name must start with 'dvrk_'"):
+        launch_module.jhu_launch("jhu-daVinci", "pybullet")

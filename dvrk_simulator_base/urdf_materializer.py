@@ -34,7 +34,7 @@ class MaterializedUrdf:
 def default_generated_root(anchor: str | Path | None = None) -> Path:
     """Return the user cache directory for dVRK simulator artifacts."""
     cache_root = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
-    return (cache_root / "dvrk_simulator_base").resolve()
+    return (cache_root / (anchor or "dvrk_simulator_base")).resolve()
 
 
 def _expand_virtual_robot(

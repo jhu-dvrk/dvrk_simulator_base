@@ -36,6 +36,24 @@ class SimulatorRosNode(Node):
         self._state_timer = self.create_timer(1.0 / state_publish_rate_hz, self._publish_latest)
         self._diagnostics_timer = self.create_timer(1.0, self._publish_diagnostics)
 
+    @classmethod
+    def from_scene_path(
+        cls,
+        name,
+        scene_path,
+        *,
+        load_scene_fn,
+        state_publish_rate_hz=100.0,
+        command_queue_capacity=32,
+    ):
+        scene = load_scene_fn(scene_path)
+        return cls(
+            name,
+            scene.robots,
+            state_publish_rate_hz=state_publish_rate_hz,
+            command_queue_capacity=command_queue_capacity,
+        )
+
     def install_initial_snapshots(self, snapshots):
         self._check_scene(snapshots)
         for name, snapshot in snapshots.items():
@@ -96,6 +114,27 @@ class SimulatorRosNode(Node):
         self._publishing_enabled = False
         self._state_timer.cancel()
         self._diagnostics_timer.cancel()
+
+
+class SceneBasedSimulatorNode(SimulatorRosNode):
+    """Convenience subclass that loads scene robots using a configuration loader."""
+
+    def __init__(
+        self,
+        name,
+        *,
+        scene_path,
+        load_scene_fn,
+        state_publish_rate_hz=100.0,
+        command_queue_capacity=32,
+    ):
+        scene = load_scene_fn(scene_path)
+        super().__init__(
+            name,
+            scene.robots,
+            state_publish_rate_hz=state_publish_rate_hz,
+            command_queue_capacity=command_queue_capacity,
+        )
 
 
 def run_frontend(node_factory, python, worker_module, start, ros_args):
