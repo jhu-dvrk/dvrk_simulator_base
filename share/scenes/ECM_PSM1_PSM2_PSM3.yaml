@@ -44,7 +44,6 @@ scene:
   camera:
     mode: stereo
     owner: ECM
-    frame: ECM_optical
     width: 1280
     height: 720
     horizontal_fov_deg: 60.0

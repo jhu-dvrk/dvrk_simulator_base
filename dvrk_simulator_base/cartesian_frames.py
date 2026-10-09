@@ -15,7 +15,6 @@ VIEW_TO_OPTICAL_ROTATION = np.array([
     [1.0, 0.0, 0.0],
     [0.0, 1.0, 0.0],
 ])
-_VIEW_TO_OPTICAL_ROTATION = VIEW_TO_OPTICAL_ROTATION
 
 
 def compose_pose(first: Pose, second: Pose) -> Pose:

@@ -121,20 +121,18 @@ def _load_documents(
     source: Path,
     visited: set[Path],
     resolver: SceneResolver | None,
+    loaded: set[Path],
 ) -> list[tuple[Path, dict[str, Any]]]:
     resolved_source = source.resolve()
+    if not resolved_source.is_file():
+        if resolver is None:
+            raise FileNotFoundError(f"Scene configuration not found: {source}")
+        resolved_source = resolver.resolve(source)
     if resolved_source in visited:
         raise ValueError(f"Circular scene include detected: {resolved_source}")
+    if resolved_source in loaded:
+        return []
     visited.add(resolved_source)
-
-    if not resolved_source.is_file():
-        if resolver is not None:
-            resolved_source = resolver.resolve(source)
-            if resolved_source in visited:
-                raise ValueError(f"Circular scene include detected: {resolved_source}")
-            visited.add(resolved_source)
-        else:
-            raise FileNotFoundError(f"Scene configuration not found: {source}")
 
     with resolved_source.open("r", encoding="utf-8") as stream:
         document = yaml.safe_load(stream) or {}
@@ -175,9 +173,11 @@ def _load_documents(
             raise FileNotFoundError(
                 f"{resolved_source}: included scene file {inc!r} not found"
             )
-        documents.extend(_load_documents(resolved_inc, visited, resolver))
+        documents.extend(_load_documents(resolved_inc, visited, resolver, loaded))
 
     documents.append((resolved_source, scene))
+    visited.remove(resolved_source)
+    loaded.add(resolved_source)
     return documents
 
 
@@ -198,9 +198,10 @@ def load_scene_config(
         raise TypeError(f"expected path or sequence of paths, got {type(path)}")
 
     visited: set[Path] = set()
+    loaded: set[Path] = set()
     all_documents: list[tuple[Path, dict[str, Any]]] = []
     for source in sources:
-        all_documents.extend(_load_documents(source, visited, resolver))
+        all_documents.extend(_load_documents(source, visited, resolver, loaded))
 
     scene_names: list[str] = []
     merged_frames: dict[str, dict[str, Any]] = {}
@@ -223,8 +224,7 @@ def load_scene_config(
         if camera_doc is not None:
             if not isinstance(camera_doc, dict):
                 raise ValueError(f"{doc_source}: scene.camera must be a mapping")
-            if camera_doc.get("mode", "off") != "off" or not merged_camera_doc:
-                merged_camera_doc.update(camera_doc)
+            merged_camera_doc.update(camera_doc)
 
         robot_entries = scene.get("robots", [])
         if robot_entries:

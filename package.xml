@@ -21,6 +21,12 @@
 
   <test_depend>python3-pytest</test_depend>
 
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>rqt_dvrk</exec_depend>
+  <exec_depend>rqt_gui_py</exec_depend>
+
   <export>
     <build_type>ament_python</build_type>
   </export>

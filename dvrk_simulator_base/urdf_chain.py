@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import math
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
 import numpy as np
 
-from .rotations import quaternion_matrix_xyzw
+from .rotations import quaternion_matrix_xyzw, rpy_matrix, axis_rotation
 
 
 def _vector(text: str | None, default: tuple[float, float, float]) -> np.ndarray:
@@ -19,33 +18,6 @@ def _vector(text: str | None, default: tuple[float, float, float]) -> np.ndarray
     if values.shape != (3,):
         raise ValueError(f"expected three URDF coordinates, got {text!r}")
     return values
-
-
-def _rpy_matrix(rpy: np.ndarray) -> np.ndarray:
-    roll, pitch, yaw = rpy
-    cr, sr = math.cos(roll), math.sin(roll)
-    cp, sp = math.cos(pitch), math.sin(pitch)
-    cy, sy = math.cos(yaw), math.sin(yaw)
-    return np.array(
-        [
-            [cy * cp, cy * sp * sr - sy * cr, cy * sp * cr + sy * sr],
-            [sy * cp, sy * sp * sr + cy * cr, sy * sp * cr - cy * sr],
-            [-sp, cp * sr, cp * cr],
-        ]
-    )
-
-
-def _axis_rotation(axis: np.ndarray, angle: float) -> np.ndarray:
-    x, y, z = axis
-    c, s = math.cos(angle), math.sin(angle)
-    v = 1.0 - c
-    return np.array(
-        [
-            [c + x * x * v, x * y * v - z * s, x * z * v + y * s],
-            [y * x * v + z * s, c + y * y * v, y * z * v - x * s],
-            [z * x * v - y * s, z * y * v + x * s, c + z * z * v],
-        ]
-    )
 
 
 @dataclass(frozen=True)
@@ -98,8 +70,8 @@ class UrdfChain:
             origin_position = _vector(
                 None if origin is None else origin.attrib.get("xyz"), (0.0, 0.0, 0.0)
             )
-            origin_rotation = _rpy_matrix(
-                _vector(None if origin is None else origin.attrib.get("rpy"), (0.0, 0.0, 0.0))
+            origin_rotation = rpy_matrix(
+                *_vector(None if origin is None else origin.attrib.get("rpy"), (0.0, 0.0, 0.0))
             )
             axis_element = element.find("axis")
             axis = _vector(
@@ -139,6 +111,39 @@ class UrdfChain:
         self.base_position = np.asarray(base_position, dtype=float)
         self.base_rotation = quaternion_matrix_xyzw(base_orientation_xyzw)
 
+    @classmethod
+    def from_manifest(cls, joints, joint_names):
+        """Build the same evaluator from Isaac's generated URDF manifest."""
+        chain = cls.__new__(cls)
+        indices = {name: index for index, name in enumerate(joint_names)}
+        parsed = []
+        for joint in joints:
+            kind = joint["type"]
+            if kind not in {"fixed", "revolute", "continuous", "prismatic"}:
+                raise ValueError(f"unsupported URDF joint type {kind!r}")
+            mimic = joint.get("mimic")
+            source = mimic["joint"] if mimic else joint["name"]
+            index = None if kind == "fixed" else indices.get(source)
+            if kind != "fixed" and index is None:
+                raise ValueError(f"uncontrolled URDF joint {source!r} in tool chain")
+            axis = np.asarray(joint["axis"], dtype=float)
+            norm = float(np.linalg.norm(axis))
+            if kind != "fixed" and norm == 0.0:
+                raise ValueError(f"zero URDF joint axis in {joint['name']}")
+            if norm:
+                axis = axis / norm
+            parsed.append(_Joint(
+                kind, np.asarray(joint["origin_xyz"], dtype=float),
+                rpy_matrix(*joint["origin_rpy"]), axis, index,
+                float(mimic.get("multiplier", 1.0)) if mimic else 1.0,
+                float(mimic.get("offset", 0.0)) if mimic else 0.0,
+            ))
+        chain.joints = tuple(parsed)
+        chain.joint_count = len(joint_names)
+        chain.base_position = np.zeros(3)
+        chain.base_rotation = np.eye(3)
+        return chain
+
     def forward(self, q: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Return world position, orientation, and 6-by-N spatial Jacobian."""
         if q.shape != (self.joint_count,):
@@ -159,7 +164,7 @@ class UrdfChain:
             if joint.kind == "prismatic":
                 position = position + axis_world * amount
             else:
-                rotation = rotation @ _axis_rotation(joint.axis, amount)
+                rotation = rotation @ axis_rotation(joint.axis, amount)
 
         jacobian = np.zeros((6, self.joint_count), dtype=float)
         for index, kind, axis, origin, multiplier in axes:

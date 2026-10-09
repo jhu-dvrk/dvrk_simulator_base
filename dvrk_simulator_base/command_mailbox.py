@@ -6,7 +6,7 @@ from collections import deque
 from dataclasses import dataclass
 import threading
 import time
-from typing import Any, Callable
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -15,17 +15,6 @@ class CommandEnvelope:
     sequence: int
     received_at_ns: int
     payload: Any
-
-
-@dataclass(frozen=True)
-class DeferredCommandPayload:
-    """Convert a superseding command only after the mailbox selects it."""
-
-    message: Any
-    converter: Callable[[Any], Any]
-
-    def resolve(self) -> Any:
-        return self.converter(self.message)
 
 
 @dataclass(frozen=True)
@@ -40,10 +29,10 @@ class CommandMailboxes:
     """Latest arm/jaw motion plus a bounded queue of ordered state commands."""
 
     _ARM_MOTION = frozenset((
-        "servo_jp", "servo_cp", "move_jp", "move_cp", "move_cp_world",
+        "servo_jp", "servo_cp", "move_jp", "move_cp",
     ))
     _JAW_MOTION = frozenset(("jaw/servo_jp", "jaw/move_jp"))
-    _MOVE_CHANNELS = frozenset(("move_jp", "move_cp", "move_cp_world", "jaw/move_jp"))
+    _MOVE_CHANNELS = frozenset(("move_jp", "move_cp", "jaw/move_jp"))
 
     def __init__(self, discrete_capacity: int = 32) -> None:
         if discrete_capacity <= 0:

@@ -182,3 +182,16 @@ def test_resolve_asset_uri(tmp_path):
         raise AssertionError("expected ValueError for missing package")
 
 
+
+def test_shared_include_is_loaded_once_and_later_camera_can_disable(tmp_path):
+    arm_root = Path(get_package_share_directory("dvrk_arm_description")) / "arms"
+    (tmp_path / "common.yaml").write_text(
+        "scene: {robots: [{config: ECM.yaml}], camera: {mode: mono}}\n"
+    )
+    (tmp_path / "left.yaml").write_text("scene: {include: common.yaml}\n")
+    (tmp_path / "right.yaml").write_text("scene: {include: common.yaml}\n")
+    root = tmp_path / "root.yaml"
+    root.write_text("scene: {include: [left.yaml, right.yaml], camera: {mode: 'off'}}\n")
+    scene = load_scene_config(root, robot_config_root=arm_root)
+    assert len(scene.robots) == 1
+    assert scene.camera.mode == "off"

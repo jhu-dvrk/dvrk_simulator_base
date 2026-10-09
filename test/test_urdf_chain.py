@@ -124,3 +124,22 @@ def test_urdf_chain_validation_errors(tmp_path):
     # Zero axis
     with pytest.raises(ValueError, match="zero URDF joint axis"):
         UrdfChain(urdf, "link1", ("j1",), (0, 0, 0), (0, 0, 0, 1))
+
+
+def test_manifest_jacobian_accounts_for_mimic_joint_motion():
+    joints = [
+        {'name': 'drive', 'type': 'revolute', 'origin_xyz': [0, 0, 0],
+         'origin_rpy': [0, 0, 0], 'axis': [0, 0, 1], 'mimic': None},
+        {'name': 'mimic', 'type': 'revolute', 'origin_xyz': [1, 0, 0],
+         'origin_rpy': [0, 0, 0], 'axis': [0, 0, 1],
+         'mimic': {'joint': 'drive', 'multiplier': 0.5, 'offset': 0.1}},
+        {'name': 'tip', 'type': 'fixed', 'origin_xyz': [1, 0, 0],
+         'origin_rpy': [0, 0, 0], 'axis': [0, 0, 0], 'mimic': None},
+    ]
+    chain = UrdfChain.from_manifest(joints, ('drive',))
+    q = np.array([0.2])
+    position, rotation, jacobian = chain.forward(q)
+    epsilon = 1e-6
+    next_position, _, _ = chain.forward(q + epsilon)
+    np.testing.assert_allclose(jacobian[:3, 0], (next_position - position) / epsilon, atol=2e-6)
+    np.testing.assert_allclose(jacobian[3:, 0], [0, 0, 1.5])

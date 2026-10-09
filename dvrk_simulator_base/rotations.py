@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 
 
@@ -69,3 +71,34 @@ def rotation_to_quaternion_wxyz(rotation: object) -> tuple[float, float, float, 
     """Convert a rotation matrix to scalar-first ordering for Isaac Sim."""
     x, y, z, w = rotation_to_quaternion_xyzw(rotation)
     return (w, x, y, z)
+
+
+def rpy_matrix(roll: float, pitch: float, yaw: float) -> np.ndarray:
+    cr, sr = math.cos(roll), math.sin(roll)
+    cp, sp = math.cos(pitch), math.sin(pitch)
+    cy, sy = math.cos(yaw), math.sin(yaw)
+    return np.array(
+        [
+            [cy * cp, cy * sp * sr - sy * cr, cy * sp * cr + sy * sr],
+            [sy * cp, sy * sp * sr + cy * cr, sy * sp * cr - cy * sr],
+            [-sp, cp * sr, cp * cr],
+        ]
+    )
+
+
+def axis_rotation(axis: np.ndarray, angle: float) -> np.ndarray:
+    axis = np.asarray(axis, dtype=float)
+    norm = float(np.linalg.norm(axis))
+    if axis.shape != (3,) or not np.isfinite(axis).all() or norm == 0.0:
+        raise ValueError("rotation axis must be a finite nonzero three-vector")
+    axis = axis / norm
+    x, y, z = axis
+    c, s = math.cos(angle), math.sin(angle)
+    v = 1.0 - c
+    return np.array(
+        [
+            [c + x * x * v, x * y * v - z * s, x * z * v + y * s],
+            [y * x * v + z * s, c + y * y * v, y * z * v - x * s],
+            [z * x * v - y * s, z * y * v + x * s, c + z * z * v],
+        ]
+    )
