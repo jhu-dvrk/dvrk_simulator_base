@@ -8,6 +8,7 @@ from typing import Any, Sequence
 
 import yaml
 
+from ament_index_python.packages import get_package_share_directory
 from dvrk_arm_description import RobotConfig, load_robot_config, with_base_pose
 
 
@@ -319,3 +320,27 @@ def load_scene_config(
 
     scene_name = "+".join(scene_names) if scene_names else all_documents[0][0].stem
     return SceneConfig(scene_name, tuple(robots), camera, tuple(objects))
+
+
+def resolve_asset_uri(asset: str, error_cls: type[Exception] = ValueError) -> Path:
+    """Resolve package://<package>/<relative-path> and absolute asset paths."""
+    if asset.startswith("package://"):
+        package, separator, relative = asset[len("package://") :].partition("/")
+        if not package or not separator or not relative:
+            raise error_cls(f"invalid scene asset URI {asset!r}")
+        try:
+            path = Path(get_package_share_directory(package)) / relative
+        except Exception as error:
+            raise error_cls(
+                f"could not locate package for scene asset {asset!r}"
+            ) from error
+    else:
+        path = Path(asset).expanduser()
+        if not path.is_absolute():
+            raise error_cls(
+                f"scene asset must be package:// URI or absolute path: {asset!r}"
+            )
+    path = path.resolve()
+    if not path.is_file():
+        raise error_cls(f"scene asset does not exist: {path}")
+    return path

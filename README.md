@@ -12,10 +12,12 @@ package remains unchanged.
 The shared [CRTK ROS contract](docs/ros_crtk_contract.md) defines the common
 topic graph, QoS, command queueing, and Cartesian-frame behavior for backends.
 
-URDF parsing and simulator model import are deliberately backend-owned. The
-base package describes semantic joint and frame names in configuration and
-requires name-based mappings through its backend contracts, but does not build
-or interpret a URDF tree.
+Simulator engine model creation and physics integration remain backend-owned.
+The base package provides shared, engine-independent URDF helpers—such as
+`UrdfChain` for root-to-tool forward kinematics and analytic spatial Jacobians,
+and `urdf_materializer` for simulation meshes—while describing semantic joint and
+frame names in configuration and requiring contract-based mappings rather than
+tying simulation logic to a specific physics engine.
 
 Run the simulator-free tests with:
 

@@ -154,3 +154,31 @@ def test_scene_detects_circular_includes(tmp_path):
     else:
         raise AssertionError("expected circular include error was not raised")
 
+
+def test_resolve_asset_uri(tmp_path):
+    from dvrk_simulator_base.scene import resolve_asset_uri
+
+    sample_file = tmp_path / "sample.urdf"
+    sample_file.touch()
+    assert resolve_asset_uri(str(sample_file)) == sample_file
+
+    uri = "package://dvrk_simulator_base/share/assets/table/table.urdf"
+    resolved = resolve_asset_uri(uri)
+    assert resolved.is_file()
+    assert resolved.name == "table.urdf"
+
+    try:
+        resolve_asset_uri("relative/path/file.urdf")
+    except ValueError as error:
+        assert "package:// URI or absolute path" in str(error)
+    else:
+        raise AssertionError("expected ValueError for relative path")
+
+    try:
+        resolve_asset_uri("package://missing_pkg_xyz/foo.urdf")
+    except ValueError as error:
+        assert "could not locate package" in str(error)
+    else:
+        raise AssertionError("expected ValueError for missing package")
+
+
