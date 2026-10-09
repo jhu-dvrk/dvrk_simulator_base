@@ -152,8 +152,10 @@ def test_process_commands_frames_events_and_graceful_shutdown(worker):
 def test_initialization_failure_reaps_worker(worker):
     process = ipc_runtime.SimulationProcess(sys.executable, "dvrk_newton.simulation_worker", {"fail": True})
     try:
-        with pytest.raises(SimulationProcessError, match="intentional initialization failure"):
+        with pytest.raises(SimulationProcessError, match="intentional initialization failure") as failure:
             pump_until(process, FakeNode(), lambda: process.ready)
+        assert "Traceback (most recent call last)" in str(failure.value)
+        assert "raise RuntimeError" in str(failure.value)
     finally:
         process.shutdown()
     assert process.process.returncode == 1

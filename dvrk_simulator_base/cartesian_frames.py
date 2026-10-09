@@ -10,11 +10,12 @@ from .types import Pose, Twist
 # The dVRK optical convention is +X forward, +Y left, +Z up. Teleoperation
 # view coordinates use X left, Y up, Z away from the operator. This maps view
 # coordinates into the ECM optical frame and is independent of a simulator.
-_VIEW_TO_OPTICAL_ROTATION = np.array([
+VIEW_TO_OPTICAL_ROTATION = np.array([
     [0.0, 0.0, 1.0],
     [1.0, 0.0, 0.0],
     [0.0, 1.0, 0.0],
 ])
+_VIEW_TO_OPTICAL_ROTATION = VIEW_TO_OPTICAL_ROTATION
 
 
 def compose_pose(first: Pose, second: Pose) -> Pose:
@@ -39,7 +40,7 @@ def relative_pose(pose: Pose, reference: Pose) -> Pose:
 def view_pose_from_optical(optical_pose: Pose) -> Pose:
     """Return the dVRK view pose derived from the current ECM optical FK."""
     return compose_pose(
-        optical_pose, Pose(np.zeros(3), _VIEW_TO_OPTICAL_ROTATION)
+        optical_pose, Pose(np.zeros(3), VIEW_TO_OPTICAL_ROTATION)
     )
 
 

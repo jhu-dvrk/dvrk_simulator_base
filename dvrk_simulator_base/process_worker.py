@@ -105,7 +105,7 @@ def run_worker(endpoint: UnixSocketEndpoint, factory) -> int:
         failed = True
         traceback.print_exc()
         try:
-            endpoint.send({"kind": "error", "text": str(error)})
+            endpoint.send({"kind": "error", "text": str(error), "traceback": traceback.format_exc()})
         except (OSError, BufferError, ValueError):
             pass
     finally:
@@ -135,4 +135,3 @@ def worker_main(factory):
     parser.add_argument("--ipc-fd", required=True, type=int)
     options = parser.parse_args()
     return run_worker(UnixSocketEndpoint(socket.socket(fileno=options.ipc_fd)), factory)
-

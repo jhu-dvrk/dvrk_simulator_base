@@ -69,7 +69,8 @@ class SimulationProcess:
             elif kind == "metrics":
                 self._metrics = message["metrics"]
             elif kind == "error":
-                raise SimulationProcessError(f"simulation process failed: {message['text']}")
+                detail = message.get("traceback") or message["text"]
+                raise SimulationProcessError(f"simulation process failed: {detail}")
             elif kind == "stopped":
                 self.stopped = True
                 if message["failed"]:
