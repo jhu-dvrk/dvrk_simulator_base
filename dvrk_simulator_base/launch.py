@@ -42,7 +42,6 @@ class SystemProfile:
     cwd: Path
     display_config: Path | None = None
     control_panel: bool = False
-    auto_start: bool = False
     preview: bool = False
 
 
@@ -79,10 +78,8 @@ def start_session(context, package, profile=None):
             processes.append(display)
             supervised.append(display)
         if profile.control_panel:
-            processes.append(Node(package="dvrk_console", executable="control_panel", output="screen"))
-        if profile.auto_start:
-            processes.append(Node(package="dvrk_simulator_base", executable="start_dvrk_system",
-                                  output="screen", arguments=["--console", _value(context, "console")]))
+            processes.append(Node(package="dvrk_console", executable="control_panel",
+                                  arguments=["-s", "@dvrk:simulator:stereo_source"], output="screen"))
         if profile.preview and _boolean(context, "preview"):
             processes.append(TimerAction(period=2.0, actions=[ExecuteProcess(cmd=[
                 "gst-launch-1.0", "unixfdsrc", "socket-path=dvrk:simulator:stereo_source",
@@ -117,7 +114,7 @@ def simulator_launch(package, *, profile=None, exercise_argument="scene"):
         DeclareLaunchArgument("config", default_value=str(config), description="Backend runtime YAML"),
         DeclareLaunchArgument(exercise_argument, default_value="tray_cubes.yaml" if profile else "",
                              description="Scene/exercise YAML path or installed filename"),
-        DeclareLaunchArgument("headless", default_value="true" if profile else "",
+        DeclareLaunchArgument("headless", default_value="true",
                              description="Desktop viewer override; empty uses runtime YAML"),
         DeclareLaunchArgument("rqt", default_value="false", description="Start the dVRK monitor"),
         DeclareLaunchArgument("rqt_console", default_value="false", description="Include console monitoring"),
@@ -139,26 +136,17 @@ def jhu_launch(platform, package):
     directory = Path(get_package_share_directory("dvrk_config_jhu")).parent / platform
     profile = directory / backend
     label = {"newton": "Newton", "pybullet": "PyBullet", "isaac_sim": "IsaacSim"}[backend]
+    system_config = profile / f"system-daVinci-{label}.json"
+    if not system_config.is_file():
+        system_config = profile / f"system-daVinciSi-{label}.json"
+    if not system_config.is_file():
+        system_config = profile / f"system-MTMR-MTML-{label}-Teleop.json"
     return simulator_launch(package, profile=SystemProfile(
         config=profile / f"{backend}_patient_cart.yaml",
         cart_scene=profile / "ECM_PSM1_PSM2_PSM3.yaml",
-        system_config=profile / f"system-MTMR-MTML-{label}-Teleop.json", cwd=directory,
+        system_config=system_config, cwd=directory,
         display_config=profile / "stereo_display_simulator.json", control_panel=True,
     ), exercise_argument="exercise")
-
-
-def open_xr_launch(package):
-    if not package.startswith("dvrk_"):
-        raise ValueError(f"package name must start with 'dvrk_': got {package!r}")
-    backend = package.removeprefix("dvrk_")
-    directory = Path(get_package_share_directory(package)) / "share/open-xr"
-    return simulator_launch(package, profile=SystemProfile(
-        config=directory / f"{backend}.yaml",
-        cart_scene="ECM_PSM1_PSM2_PSM3_stereo_rtsp.yaml" if package == "dvrk_isaac_sim" else "ECM_PSM1_PSM2_PSM3.yaml",
-        system_config=directory / "system-MTML-MTMR-OpenXR-patient-cart-ROS.json", cwd=directory,
-        display_config=None if package == "dvrk_isaac_sim" else directory / "dvrk-console-overlay.json",
-        auto_start=True,
-    ))
 
 
 def scene_test_launch(package):
