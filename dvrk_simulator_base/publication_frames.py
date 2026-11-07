@@ -2,7 +2,7 @@
 
 from dataclasses import replace
 
-from .cartesian_frames import relative_pose, relative_twist, view_pose_from_optical
+from .cartesian_frames import relative_pose, relative_twist
 from .rotations import quaternion_matrix_xyzw
 from .snapshots import ArmPublicationFrames
 from .types import Pose
@@ -12,7 +12,7 @@ def with_publication_frames(snapshots, configs):
     """All arms and the moving ECM reference come from the same completed step."""
     ecm_config = next((config for config in configs if config.type == "ECM"), None)
     ecm = None if ecm_config is None else snapshots[ecm_config.name]
-    view = None if ecm is None else view_pose_from_optical(ecm.measured_cp_world)
+    view = None if ecm is None else ecm.measured_cp_world
     result = {}
     for config in configs:
         snapshot = snapshots[config.name]

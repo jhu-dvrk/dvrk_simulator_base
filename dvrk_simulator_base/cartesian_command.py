@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from .cartesian_frames import compose_pose, view_pose_from_optical
+from .cartesian_frames import compose_pose
 from .rotations import quaternion_matrix_xyzw
 from .types import Pose
 
@@ -14,7 +14,7 @@ class CartesianCommand:
 
 
 def resolve_cartesian_command(command: CartesianCommand, config,
-                              ecm_optical_pose: Pose | None = None,
+                              ecm_view_pose: Pose | None = None,
                               *, has_ecm: bool = False) -> Pose:
     """Resolve at consumption time using the last completed simulation state.
 
@@ -30,9 +30,9 @@ def resolve_cartesian_command(command: CartesianCommand, config,
     if has_ecm:
         if frame not in ("", "ECM_view"):
             raise ValueError(f"unsupported frame {frame!r}")
-        if ecm_optical_pose is None:
+        if ecm_view_pose is None:
             raise ValueError("ECM state is unavailable")
-        return compose_pose(view_pose_from_optical(ecm_optical_pose), command.pose)
+        return compose_pose(ecm_view_pose, command.pose)
     if frame:
         raise ValueError(f"unsupported frame {frame!r}")
     return command.pose

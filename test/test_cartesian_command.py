@@ -25,7 +25,7 @@ def test_moving_ecm_is_resolved_at_consumption(config):
     command = CartesianCommand(Pose([0.1, 0.2, 0.3], np.eye(3)), "ECM_view")
     first = resolve_cartesian_command(command, config, Pose([1, 0, 0], np.eye(3)), has_ecm=True)
     second = resolve_cartesian_command(command, config, Pose([2, 0, 0], np.eye(3)), has_ecm=True)
-    np.testing.assert_allclose(first.position, [1.3, 0.1, 0.2])
+    np.testing.assert_allclose(first.position, [1.1, 0.2, 0.3])
     np.testing.assert_allclose(second.position - first.position, [1, 0, 0])
     default = resolve_cartesian_command(CartesianCommand(command.pose), config,
                                         Pose([2, 0, 0], np.eye(3)), has_ecm=True)

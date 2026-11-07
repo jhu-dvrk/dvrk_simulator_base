@@ -7,14 +7,8 @@ import numpy as np
 from .types import Pose, Twist
 
 
-# The dVRK optical convention is +X forward, +Y left, +Z up. Teleoperation
-# view coordinates use X left, Y up, Z away from the operator. This maps view
-# coordinates into the ECM optical frame and is independent of a simulator.
-VIEW_TO_OPTICAL_ROTATION = np.array([
-    [0.0, 0.0, 1.0],
-    [1.0, 0.0, 0.0],
-    [0.0, 1.0, 0.0],
-])
+# ROS optical: right/down/forward. dVRK task/lens: left/up/forward.
+VIEW_TO_OPTICAL_ROTATION = np.diag([-1., -1., 1.])
 
 
 def compose_pose(first: Pose, second: Pose) -> Pose:
@@ -52,3 +46,8 @@ def relative_twist(pose: Pose, twist: Twist, reference: Pose,
     angular = twist.angular - reference_twist.angular
     rotation = reference.orientation.T
     return Twist(rotation @ linear, rotation @ angular)
+
+
+def optical_pose_from_view(view_pose: Pose) -> Pose:
+    """Convert a controller lens pose to the URDF ECM_optical pose."""
+    return compose_pose(view_pose, Pose(np.zeros(3), VIEW_TO_OPTICAL_ROTATION))

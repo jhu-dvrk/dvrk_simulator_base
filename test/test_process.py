@@ -134,7 +134,7 @@ def test_process_commands_frames_events_and_graceful_shutdown(worker):
         node.arm_interfaces["PSM1"].commands.submit_servo("servo_cp", CartesianCommand(Pose([0.1, 0.2, 0.3], np.eye(3)), "ECM_view"))
         pump_until(process, node, lambda: node.states["PSM1"].measured_cp_world.position[0] > 2)
         state = node.states["PSM1"]
-        np.testing.assert_allclose(state.measured_cp_world.position, [2.3, 0.1, 0.2])
+        np.testing.assert_allclose(state.measured_cp_world.position, [2.1, 0.2, 0.3])
         np.testing.assert_allclose(state.publication_frames.measured_cp.position, [0.1, 0.2, 0.3])
         assert node.states["ECM"].sequence == state.sequence
         for text in ("PAUSED", "ENABLED"):
