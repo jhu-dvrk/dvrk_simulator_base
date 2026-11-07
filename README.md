@@ -95,6 +95,31 @@ rates are rejected. Newton supports pose-error grasping; force/torque policies
 and constraint tuning belong to PyBullet. The cache option is `generated_root`.
 Select the Isaac interpreter through `DVRK_ISAAC_SIM_PYTHON` or `ISAAC_SIM_DIR`.
 
+The shared Unix-FD camera sink attaches `dvrk_data`'s
+`DataCollectionFrameTimestamps` metadata for the console's frame-timing display.
+It uses the typed `dvrk_data.video_timestamps` binding to the native helpers.
+Camera caps also declare `dvrk-video-layout=mono` or `stereo-LR`. The control panel
+uses this declaration to offer a full mono preview or separate left/right views
+for simulator sockets, including custom socket names.
+Newton and PyBullet stamp render start using CPU `CLOCK_REALTIME`; stereo eyes
+share that timestamp because they use the same scene snapshot. Frame age includes
+rendering and downstream transport/display submission, but excludes time spent
+waiting for the render worker to consume a scene snapshot. Stereo source-output
+time is stamped before submission; unavailable alignment/overlay stages remain
+unset. Simulation time stays separate from these wall-clock measurements.
+
+Newton and PyBullet share the grasp contact-region default in
+`configuration.DEFAULT_CONTACT_REGION_OFFSET_M`: `[0.0, 0.0, 0.0072]` meters
+relative to the tool's IK/FK frame. The positive Z offset places the region
+toward the jaws and restores the previous grasp location for instrument 420006.
+It affects grasp qualification and markers; IK/FK continue to use `tool_tip_link`.
+Other instrument geometries can override the offset in their runtime YAML:
+
+```yaml
+grasp:
+  contact_region_offset_m: [0.0, 0.0, 0.0072]
+```
+
 `launch.py` builds simulator, patient-cart, and OpenXR sessions. Existing package
 launch filenames remain thin wrappers. An empty `headless` override uses the
 runtime YAML; patient-cart sessions default to headless. `console` selects the

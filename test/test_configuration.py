@@ -3,7 +3,9 @@ from dataclasses import dataclass, field
 
 import pytest
 
-from dvrk_simulator_base.configuration import PoseGraspConfig, RuntimeConfig, load_runtime_config
+from dvrk_simulator_base.configuration import (
+    ConstraintGraspConfig, PoseGraspConfig, RuntimeConfig, load_grasp, load_runtime_config,
+)
 
 
 @dataclass(frozen=True)
@@ -30,3 +32,13 @@ def test_defaults_and_relative_cache_directory(tmp_path):
     assert config.generated_root == tmp_path / 'generated'
     assert config.simulation_rate_hz == 120.0
     assert config.grasp.max_grasps_per_object == 0
+
+
+@pytest.mark.parametrize('grasp_type', [PoseGraspConfig, ConstraintGraspConfig])
+def test_shared_grasp_offset_default_and_explicit_override(tmp_path, grasp_type):
+    source = tmp_path / 'runtime.yaml'
+    assert load_grasp({}, grasp_type, source).contact_region_offset_m == (0.0, 0.0, 0.0072)
+    custom = (0.001, -0.002, 0.01)
+    assert load_grasp(
+        {'contact_region_offset_m': list(custom)}, grasp_type, source
+    ).contact_region_offset_m == custom

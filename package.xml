@@ -9,6 +9,7 @@
   <exec_depend>crtk_msgs</exec_depend>
   <exec_depend>crtk_python_client</exec_depend>
   <exec_depend>dvrk_arm_description</exec_depend>
+  <exec_depend>dvrk_data</exec_depend>
   <exec_depend>dvrk_model</exec_depend>
   <exec_depend>diagnostic_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>

@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import socket
 import stat
+import time
 from typing import Any
 
 import numpy as np
@@ -29,6 +30,8 @@ class VideoFrame:
     rgba: np.ndarray
     simulation_time: float
     sequence: int
+    # CLOCK_REALTIME at render start, independent of the simulation clock.
+    source_timestamp_ns: int | None = None
 
 
 def _load_gstreamer():
@@ -102,6 +105,14 @@ class UnixFdVideoSink:
         self.memfd_name = memfd_name
         self.error_cls = error_cls
         self.Gst, self.GstAllocators, self.Gio = _load_gstreamer()
+        try:
+            from dvrk_data import video_timestamps
+        except ImportError as error:
+            raise GStreamerDependencyError(
+                "dvrk_data video timestamp bindings are required; rebuild dvrk_data "
+                "and source the workspace setup.bash"
+            ) from error
+        self._timestamps = video_timestamps
         self.pipeline = None
         self.source = None
         self.frames_pushed = 0
@@ -128,7 +139,9 @@ class UnixFdVideoSink:
         transport_width = getattr(self.options, "transport_width", self.options.width)
         caps = Gst.Caps.from_string(
             f"video/x-raw,format=RGBA,width={transport_width},"
-            f"height={self.options.height},framerate={rate.numerator}/{rate.denominator}"
+            f"height={self.options.height},framerate={rate.numerator}/{rate.denominator},"
+            + ("dvrk-video-layout=stereo-LR" if self.options.mode == "stereo"
+               else "dvrk-video-layout=mono")
         )
         source.set_property("caps", caps)
         source.set_property("is-live", True)
@@ -194,6 +207,7 @@ class UnixFdVideoSink:
         expected = (self.options.height, transport_width, 4)
         if frame.rgba.shape != expected or frame.rgba.dtype.name != "uint8":
             raise ValueError(f"camera frame must be uint8 RGBA with shape {expected}")
+        source_ns = frame.source_timestamp_ns if frame.source_timestamp_ns is not None else time.time_ns()
         size = frame.rgba.nbytes
         fd = os.memfd_create(self.memfd_name, os.MFD_CLOEXEC)
         owned_by_gstreamer = False
@@ -212,6 +226,15 @@ class UnixFdVideoSink:
             buffer = self.Gst.Buffer.new()
             buffer.append_memory(memory)
             buffer.duration = round(self.Gst.SECOND / self.options.rate_hz)
+            timestamps = self._timestamps.FrameTimestamps()
+            if self.options.mode == "stereo":
+                timestamps.channel = "stereo-LR"
+                timestamps.left_source_ts = timestamps.right_source_ts = source_ns
+                timestamps.source_stereo_output_ts = time.time_ns()
+            else:
+                timestamps.channel = "mono"
+                timestamps.mono_source_ts = source_ns
+            self._timestamps.set_frame_timestamps(buffer, timestamps)
             result = self.source.emit("push-buffer", buffer)
             if result != self.Gst.FlowReturn.OK:
                 raise self.error_cls(

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import os
 from pathlib import Path
 import socket
+import time
 
 import numpy as np
 import pytest
@@ -23,7 +24,7 @@ class _SimpleCameraOptions:
 
     @property
     def transport_width(self) -> int:
-        return self.width
+        return self.width * (2 if self.mode == "stereo" else 1)
 
 
 def test_unixfd_sink_accepts_memfd_rgba_and_cleans_socket(tmp_path):
@@ -66,3 +67,65 @@ def test_unixfd_sink_reports_busy_abstract_socket():
     finally:
         sink.close()
         blocker.close()
+
+
+@pytest.mark.parametrize("mode", ["mono", "stereo"])
+@pytest.mark.parametrize("abstract", [False, True])
+def test_frame_timestamps_survive_unixfd_transport(tmp_path, mode, abstract):
+    reference = (
+        f"@dvrk:simbase:pytest-timestamps-{os.getpid()}-{mode}"
+        if abstract else tmp_path / "timestamps.sock"
+    )
+    options = _SimpleCameraOptions(reference, width=16, height=12, mode=mode)
+    sink = UnixFdVideoSink(options)
+    Gst = sink.Gst
+    receiver = Gst.Pipeline.new("timestamp-receiver")
+    source = Gst.ElementFactory.make("unixfdsrc", "input")
+    appsink = Gst.ElementFactory.make("appsink", "frames")
+    source.set_property("socket-path", reference[1:] if abstract else str(reference))
+    if abstract:
+        source.set_property("socket-type", sink.Gio.UnixSocketAddressType.ABSTRACT)
+    appsink.set_property("sync", False)
+    receiver.add(source)
+    receiver.add(appsink)
+    assert source.link(appsink)
+    try:
+        sink.start()
+        receiver.set_state(Gst.State.PLAYING)
+        rgba = np.full((12, options.transport_width, 4), [10, 20, 30, 255], dtype=np.uint8)
+        source_ns = time.time_ns() - 20_000_000
+        frame = VideoFrame(rgba, simulation_time=1.25, sequence=7, source_timestamp_ns=source_ns)
+        sample = None
+        for _ in range(20):
+            sink.push(frame)
+            sample = appsink.emit("try-pull-sample", 100 * Gst.MSECOND)
+            if sample is not None:
+                break
+        assert sample is not None, "Unix-FD receiver did not receive a camera frame"
+        buffer = sample.get_buffer()
+        meta = buffer.get_custom_meta("DataCollectionFrameTimestamps")
+        assert meta is not None
+        timestamps = meta.get_structure()
+        stereo = mode == "stereo"
+        assert sample.get_caps().get_structure(0).get_string("dvrk-video-layout") == (
+            "stereo-LR" if stereo else "mono"
+        )
+        assert timestamps.get_string("channel") == ("stereo-LR" if stereo else "mono")
+        for field in ("left-source-ts", "right-source-ts"):
+            assert timestamps.get_int64(field) == (True, source_ns if stereo else 0)
+        assert timestamps.get_int64("mono-source-ts") == (True, 0 if stereo else source_ns)
+        valid, output_ns = timestamps.get_int64("source-stereo-output-ts")
+        assert valid
+        if stereo:
+            assert source_ns <= output_ns <= time.time_ns()
+        else:
+            assert output_ns == 0
+        for field in ("alignment-output-ts", "stereo-output-ts", "overlay-output-ts"):
+            assert timestamps.get_int64(field) == (True, 0)
+        # Both transport pixels and GStreamer's running-time PTS remain intact.
+        assert buffer.extract_dup(0, buffer.get_size()) == rgba.tobytes()
+        assert buffer.pts != Gst.CLOCK_TIME_NONE
+    finally:
+        receiver.set_state(Gst.State.NULL)
+        receiver.get_state(Gst.SECOND)
+        sink.close()

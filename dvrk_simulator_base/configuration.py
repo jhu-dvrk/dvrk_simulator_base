@@ -10,6 +10,11 @@ from ament_index_python.packages import get_package_share_directory
 from .scene import SceneResolver, load_scene_config
 
 
+# Tool-local +Z points from the IK/FK frame toward the jaws. This restores
+# the 420006 contact region after tool_tip_link moved to the wrist-yaw origin.
+DEFAULT_CONTACT_REGION_OFFSET_M = (0.0, 0.0, 0.0072)
+
+
 def check_keys(document, allowed, source, field="configuration"):
     if not isinstance(document, dict):
         raise ValueError(f"{source}: {field} must be a mapping")
@@ -56,7 +61,7 @@ class PoseGraspConfig:
     release_threshold_rad: float = 0.08
     break_distance_m: float = 0.005
     break_orientation_rad: float = 0.2617993877991494
-    contact_region_offset_m: tuple[float, float, float] = (0.0, 0.0, -0.003)
+    contact_region_offset_m: tuple[float, float, float] = DEFAULT_CONTACT_REGION_OFFSET_M
     contact_region_radius_m: float = 0.005
 
 
